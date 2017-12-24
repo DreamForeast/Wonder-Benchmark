@@ -16,11 +16,12 @@
     "babel-cli": "^6.26.0",
     "babel-preset-es2015": "^6.24.1",
     "bs-platform": "2.1.0",
-    "wonder-bs-jest": "0.2.7",
-    "wonder-bs-sinon": "^0.1.4"
+    "wonder-bs-jest": "0.2.17",
+    "wonder-bs-sinon": "latest"
   },
   "dependencies": {
     "bs-json": "^0.2.3",
+    "puppeteer": "^0.13.0",
     "wonder-commonlib": "0.2.13"
   }
 }

@@ -2,8 +2,6 @@ open Wonder_jest;
 
 open Benchmark;
 
-open JestExtend;
-
 open WonderCommonlib;
 
 let _ =
@@ -45,7 +43,8 @@ let _ =
           |> then_(
                (p) => {
                  page := Some(p);
-                 state := createState(p, browser^ |> Js.Option.getExn, "./mine/wd.js", "basic_boxes.json");
+                 state :=
+                   createState(p, browser^ |> Js.Option.getExn, "./mine/wd.js", "basic_boxes.json");
                  p |> resolve
                }
              )
@@ -56,7 +55,7 @@ let _ =
       describe(
         "test time",
         () =>
-          testPromise(
+          testPromiseWithTimeout(
             "create 20k boxes",
             () => {
               /* state^
@@ -464,14 +463,18 @@ return [n1, n2, n3, n4]
               /* let func = () => {
                  let a = 1;
                                      }; */
+
+
+
               state^
               |> exec("create_20k_boxes", [@bs] body2)
               /* |> exec("create_20k_boxes", () => {
 
                  }) */
-              |> compare((expect, toFail))
-              |> then_((_) => expect(1) == 1 |> resolve)
-            }
+              |> compare((expect, toBe))
+              /* |> compare(( expect,  pass)) */
+              /* |> then_((_) => expect(1) == 1 |> resolve) */
+            }, 16000
           )
       )
       /* describe("test memory", () => {}) */

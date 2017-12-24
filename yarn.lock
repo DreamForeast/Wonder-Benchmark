@@ -2878,21 +2878,21 @@ window-size@0.1.0:
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/window-size/-/window-size-0.1.0.tgz#5438cd2ea93b202efa3a19fe8887aee7c94f9c9d"
 
-wonder-bs-jest@0.2.7:
-  version "0.2.7"
-  resolved "https://registry.yarnpkg.com/wonder-bs-jest/-/wonder-bs-jest-0.2.7.tgz#ffc5fb213eb3e9443d71c9112e37e86bd9c53858"
+wonder-bs-jest@0.2.17:
+  version "0.2.17"
+  resolved "https://registry.yarnpkg.com/wonder-bs-jest/-/wonder-bs-jest-0.2.17.tgz#ebbcd37487d8ce0c5d863a501859b8c14db44d88"
   dependencies:
     wonder-jest latest
 
 wonder-bs-jest@latest:
-  version "0.2.6"
-  resolved "https://registry.yarnpkg.com/wonder-bs-jest/-/wonder-bs-jest-0.2.6.tgz#b5e98ba01f39eb757bf377ccf40adf16ef3db905"
+  version "0.2.13"
+  resolved "https://registry.yarnpkg.com/wonder-bs-jest/-/wonder-bs-jest-0.2.13.tgz#d620d8cd636e1224b8dd6cb3f03661dd0d2abaa5"
   dependencies:
     wonder-jest latest
 
-wonder-bs-sinon@^0.1.4:
-  version "0.1.4"
-  resolved "https://registry.yarnpkg.com/wonder-bs-sinon/-/wonder-bs-sinon-0.1.4.tgz#925388b292990ceb8110278086aeca972e1f21f7"
+wonder-bs-sinon@latest:
+  version "0.1.5"
+  resolved "https://registry.yarnpkg.com/wonder-bs-sinon/-/wonder-bs-sinon-0.1.5.tgz#3fab3d0ea7b178c687b39c87f71bff795c4c9cc0"
   dependencies:
     sinon "^4.1.2"
     wonder-bs-jest latest
