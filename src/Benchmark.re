@@ -10,43 +10,7 @@ open Contract;
 
 open Js.Promise;
 
-type caseTimeItem = {
-  name: string,
-  time: int
-};
-
-type caseItem = {
-  name: string,
-  time: array(caseTimeItem),
-  memory: int,
-  errorRate: option(int)
-};
-
-/* type compareTarget =
-   | TIME
-   | MEMORY; */
-type result = {
-  name: string,
-  timeArray: array(int),
-  memory: int
-  /* compareTarget */
-};
-
-type state = {
-  page: Page.t,
-  browser: Browser.t,
-  scriptFilePath: string,
-  name: string,
-  cases: array(caseItem),
-  result: option(result)
-};
-
-type resultTimeData = {
-  timestamp: int,
-  timeArray: array(int)
-};
-
-type compareConfig = {errorRate: float};
+open BenchmarkType;
 
 let _convertStateJsonToRecord = (page, browser, scriptFilePath, stateJson) =>
   Json.(
@@ -140,44 +104,22 @@ let _average = (promise) =>
            )
          )
          |> resolve
-     ) /* resultDataArr
-          |> Js.Array.reduce(
-               ((sumTimeArr, sumMemory, resultDataArr), ({timeArray}, memory)) => (
-                 sumTimeArr |> Js.Array.mapi((sum, index) => sum + timeArray[index]),
-                 sumMemory + memory,
-                 resultDataArr
-               ),
-               (_buildSumTimeArr(resultDataArr), 0, resultDataArr)
-             )
-          |> WonderCommonlib.DebugUtils.log
-          |> (
-            ((sumTimeArr, sumMemory, resultDataArr)) => (
-              sumTimeArr |> Js.Array.map((sumTime) => sumTime / (resultDataArr |> Js.Array.length)),
-              sumMemory / (resultDataArr |> Js.Array.length)
-            )
-          )
-          |> resolve */;
+     );
 
-/* (arr |> Js.Array.reduce((sum, value) => sum +. value, 0.))
-   /. (arr |> Js.Array.length |> Number.intToFloat)
-   |> Js.Math.round; */
 let _removeExtreme = (count, promise) =>
   promise
   |> then_(
        ((resultDataTimeArr, resultDataMemoryArr)) =>
          (
            resultDataTimeArr
-           |> WonderCommonlib.DebugUtils.logJson
            |> Js.Array.sortInPlaceWith(
                 ({timestamp: timestamp1}, {timestamp: timestamp2}) => timestamp1 - timestamp2
               )
            |> Js.Array.slice(~start=count, ~end_=Js.Array.length(resultDataTimeArr) - count),
            resultDataMemoryArr
-           |> WonderCommonlib.DebugUtils.logJson
            |> Js.Array.sortInPlaceWith((memory1, memory2) => memory1 - memory2)
            |> Js.Array.slice(~start=count, ~end_=Js.Array.length(resultDataMemoryArr) - count)
          )
-         |> WonderCommonlib.DebugUtils.logJson
          |> resolve
      );
 
@@ -213,7 +155,7 @@ let _computePerformanceTime = (timeArr: array(float)) => {
   let timeArr = timeArr |> Js.Array.map((time) => Number.floatToInt(time));
   let lastTime = ref(timeArr[0]);
   timeArr
-  |> Js.Array.slice_start(1)
+  |> Js.Array.sliceFrom(1)
   |> Js.Array.map(
        (time) => {
          let result = time - lastTime^;
@@ -269,7 +211,6 @@ let _execFunc = (browser, func, state, promise) =>
             })
          |> ignore;
          resultDataMemoryArr |> Js.Array.push(_computeMemory(lastData, data)) |> ignore;
-         /* WonderCommonlib.DebugUtils.logJson((resultDataTimeArr, resultDataMemoryArr)) |> ignore; */
          (page, (resultDataTimeArr, resultDataMemoryArr)) |> resolve
        }
      )
@@ -282,13 +223,6 @@ let _execSpecificCount = (count, func, browser, state) =>
        ([||], [||]) |> resolve
      );
 
-/* let _addScript = (scriptFilePath, page) =>
-   page
-   |> Page.addScriptTag({
-        "url": Js.Nullable.empty,
-        "content": Js.Nullable.empty,
-        "path": Js.Nullable.return(scriptFilePath)
-      }); */
 let _getPage = (state) => state.page;
 
 let _getBrowser = (state) => state.browser;
@@ -296,7 +230,6 @@ let _getBrowser = (state) => state.browser;
 let exec = (name: string, func, state) => {
   let page = state |> _getPage;
   let browser = state |> _getBrowser;
-  /* let (time, memory) = */
   state
   |> _execSpecificCount(10, func, browser)
   |> _removeExtreme(2)
@@ -308,13 +241,8 @@ let exec = (name: string, func, state) => {
            ((timeArray, memory)) => {...state, result: Some({name, timeArray, memory})} |> resolve
          )
   )
-  /* {...state, result: Some({...state.result |> Js.Option.getExn, name, time, memory})} */
 };
 
-/* let getTime = (state) => {
-     ...state,
-     result: Some({...state.result |> Js.Option.getExn, compareTarget: TIME})
-   }; */
 let _filterTargetName = (name, targetName) => name == targetName;
 
 let _getRange = (target, errorRate) => (
@@ -326,17 +254,11 @@ let _isInRange = (actual, (min, max)) => actual >= min && actual <= max;
 
 let _compareMemory = (actualMemory, targetMemory, errorRate) => {
   let (minMemory, maxMemory) = _getRange(targetMemory, errorRate);
-  switch (
-    /* _isInRange(actualTime, targetTime, errorRate), */
-    _isInRange(
-      actualMemory,
-      (minMemory, maxMemory)
+  switch (_isInRange(actualMemory, (minMemory, maxMemory))) {
+  | false => (
+      true,
+      {j|expect memory to in [$minMemory, $maxMemory], but actual is $actualMemory\n|j}
     )
-  ) {
-  | false =>
-    /* failwith({j|expect memory to in [$minMemory, $maxMemory], but actual is $actualMemory|j}) */
-    (true, {j|expect memory to in [$minMemory, $maxMemory], but actual is $actualMemory\n|j})
-  /* | _ => true |> expect |> toBe(true) |> resolve */
   | true => (false, "")
   }
 };
@@ -373,7 +295,5 @@ let compare = ((expect, toBe), promise) =>
            _compareMemory(actualMemory, targetMemory, errorRate)
            |> _compareTime(actualTimeArray, targetTimeDataArray, errorRate);
          isFail ? failwith(failMessage) : true |> expect |> toBe(true) |> resolve
-         /* true |> expect |> toBe(true) |> resolve */
-         /* isFail ? expect() |> fail(failMessage) |> resolve : true |> resolve */
        }
      );
