@@ -128,8 +128,7 @@ let _average = (promise) =>
              ((sumTimeArr, resultDataTimeArr)) =>
                sumTimeArr
                |> Js.Array.map((sumTime) => sumTime / (resultDataTimeArr |> Js.Array.length))
-           )
-           ,
+           ),
            resultDataMemoryArr
            |> Js.Array.reduce(
                 ((sumMemory, resultDataArr), memory) => (sumMemory + memory, resultDataArr),
@@ -168,17 +167,16 @@ let _removeExtreme = (count, promise) =>
        ((resultDataTimeArr, resultDataMemoryArr)) =>
          (
            resultDataTimeArr
-         |> WonderCommonlib.DebugUtils.logJson
+           |> WonderCommonlib.DebugUtils.logJson
            |> Js.Array.sortInPlaceWith(
                 ({timestamp: timestamp1}, {timestamp: timestamp2}) => timestamp1 - timestamp2
               )
            |> Js.Array.slice(~start=count, ~end_=Js.Array.length(resultDataTimeArr) - count),
            resultDataMemoryArr
-         |> WonderCommonlib.DebugUtils.logJson
+           |> WonderCommonlib.DebugUtils.logJson
            |> Js.Array.sortInPlaceWith((memory1, memory2) => memory1 - memory2)
            |> Js.Array.slice(~start=count, ~end_=Js.Array.length(resultDataMemoryArr) - count)
          )
-
          |> WonderCommonlib.DebugUtils.logJson
          |> resolve
      );
@@ -271,9 +269,7 @@ let _execFunc = (browser, func, state, promise) =>
             })
          |> ignore;
          resultDataMemoryArr |> Js.Array.push(_computeMemory(lastData, data)) |> ignore;
-
-
-/* WonderCommonlib.DebugUtils.logJson((resultDataTimeArr, resultDataMemoryArr)) |> ignore; */
+         /* WonderCommonlib.DebugUtils.logJson((resultDataTimeArr, resultDataMemoryArr)) |> ignore; */
          (page, (resultDataTimeArr, resultDataMemoryArr)) |> resolve
        }
      )
@@ -302,8 +298,8 @@ let exec = (name: string, func, state) => {
   let browser = state |> _getBrowser;
   /* let (time, memory) = */
   state
-  |> _execSpecificCount(5, func, browser)
-  |> _removeExtreme(1)
+  |> _execSpecificCount(10, func, browser)
+  |> _removeExtreme(2)
   |> _average
   |> (
     (promise) =>
@@ -364,8 +360,7 @@ let _compareTime =
        (isFail, failMessage)
      );
 
-/* let compare = (expect, {cases, result}) => { */
-let compare = ((expect, toFail), promise) =>
+let compare = ((expect, toBe), promise) =>
   promise
   |> then_(
        ({cases, result}) => {
@@ -377,7 +372,8 @@ let compare = ((expect, toFail), promise) =>
          let (isFail, failMessage) =
            _compareMemory(actualMemory, targetMemory, errorRate)
            |> _compareTime(actualTimeArray, targetTimeDataArray, errorRate);
-         isFail ? failwith(failMessage) : true |> resolve
-         /* isFail ? expect() |> toFail(failMessage) : true |> resolve */
+         isFail ? failwith(failMessage) : true |> expect |> toBe(true) |> resolve
+         /* true |> expect |> toBe(true) |> resolve */
+         /* isFail ? expect() |> fail(failMessage) |> resolve : true |> resolve */
        }
      );

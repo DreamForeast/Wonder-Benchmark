@@ -62,46 +62,6 @@ beforeEach(function () {
 
 
         jasmine.addMatchers({
-            toPass: function () {
-                return {
-                    compare: function (actual) {
-                        return {
-                            pass: true,
-                            message: function () {
-                                return "Expected to pass, but actual is not pass";
-                            }
-                        }
-                    }
-                    // negativeCompare: function (actual, expected) {
-                    //     return {
-                    //         pass: true,
-                    //         message: function () {
-                    //             return "Expected to not pass, but actual is pass";
-                    //         }
-                    //     }
-                    // }
-                };
-            },
-            toFail: function () {
-                return {
-                    compare: function (actual, expected) {
-                        return {
-                            pass: false,
-                            message: function () {
-                                return expected;
-                            }
-                        }
-                    }
-                    // negativeCompare: function (actual, expected) {
-                    //     return {
-                    //         pass: false,
-                    //         message: function () {
-                    //             return expected;
-                    //         }
-                    //     }
-                    // }
-                };
-            },
             toCalledWith: function () {
                 return {
                     compare: function (actual, expected) {
