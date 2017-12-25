@@ -12,9 +12,10 @@ open Js.Promise;
 
 open BenchmarkType;
 
-let _convertStateJsonToRecord = (page, browser, scriptFilePath, stateJson) =>
+let _convertStateJsonToRecord = (page, browser, scriptFilePath, config: config, stateJson) =>
   Json.(
     Decode.{
+      config: tFromJs(config),
       page,
       browser,
       scriptFilePath,
@@ -53,15 +54,17 @@ let _convertStateJsonToRecord = (page, browser, scriptFilePath, stateJson) =>
 let _getFilePath = (jsonFileName: string) =>
   Path.join([|Process.cwd(), "test/performance/data", jsonFileName|]);
 
-let createState = (page, browser, scriptFilePath, jsonFileName: string) => {
+let createState =
+    (~config: config={"isClosePage": true}, page, browser, scriptFilePath, jsonFileName: string) => {
   requireCheck(
     () => Contract.Operators.(jsonFileName |> _getFilePath |> Fs.existsSync |> assertTrue)
   );
   let stateJson = Fs.readFileSync(_getFilePath(jsonFileName), `utf8) |> Js.Json.parseExn;
-  stateJson |> _convertStateJsonToRecord(page, browser, scriptFilePath)
+  stateJson |> _convertStateJsonToRecord(page, browser, scriptFilePath, config)
 };
 
 let createEmptyState = () => {
+  config: Obj.magic(0),
   page: Obj.magic(0),
   browser: Obj.magic(1),
   scriptFilePath: "",
@@ -180,6 +183,8 @@ let _addScript = (scriptFilePath, promise) =>
          |> then_((_) => (page, resultDataArr) |> resolve)
      );
 
+let _getConfig = (state) => state.config;
+
 let _execFunc = (browser, func, state, promise) =>
   promise
   |> then_(
@@ -214,7 +219,15 @@ let _execFunc = (browser, func, state, promise) =>
          (page, (resultDataTimeArr, resultDataMemoryArr)) |> resolve
        }
      )
-  |> then_(((page, resultData)) => page |> Page.close |> then_((_) => resultData |> resolve));
+  |> then_(
+       ((page, resultData)) => {
+         let isClosePage = _getConfig(state).isClosePage;
+         switch isClosePage {
+         | false => resultData |> resolve
+         | true => page |> Page.close |> then_((_) => resultData |> resolve)
+         }
+       }
+     );
 
 let _execSpecificCount = (count, func, browser, state) =>
   ArraySystem.range(0, count - 1)

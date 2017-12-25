@@ -45,6 +45,7 @@ let _ =
                  page := Some(p);
                  state :=
                    createState(
+                     ~config = {"isClosePage": true},
                      p,
                      browser^ |> Js.Option.getExn,
                      "./test/res/script.js",

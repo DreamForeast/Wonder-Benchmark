@@ -16,7 +16,11 @@ type result = {
   memory: int
 };
 
+[@bs.deriving jsConverter]
+type t = {isClosePage: bool};
+
 type state = {
+  config:t,
   page: Page.t,
   browser: Browser.t,
   scriptFilePath: string,
@@ -31,3 +35,5 @@ type resultTimeData = {
 };
 
 type compareConfig = {errorRate: float};
+
+type config = {. "isClosePage": bool};
