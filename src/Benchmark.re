@@ -12,13 +12,15 @@ open Js.Promise;
 
 open BenchmarkType;
 
-let _convertStateJsonToRecord = (page, browser, scriptFilePath, config: config, stateJson) =>
+let _convertStateJsonToRecord =
+    (page, browser, scriptFilePath, dataFilePath, config: config, stateJson) =>
   Json.(
     Decode.{
       config,
       page,
       browser,
       scriptFilePathList: [scriptFilePath],
+      dataFilePath,
       name: stateJson |> field("name", string),
       caseList:
         stateJson
@@ -59,7 +61,7 @@ let _getFilePath = (jsonFileName: string) =>
 
 let createState =
     (
-      ~config={isClosePage: true, execCount: 10, extremeCount: 2, generateDataFilePath: None},
+      ~config={isClosePage: true, execCount: 10, extremeCount: 2, isGenerateDataFile: false},
       page,
       browser,
       scriptFilePath,
@@ -69,29 +71,31 @@ let createState =
     () =>
       Contract.(
         Operators.(
-          GenerateData.needGenerateData(config.generateDataFilePath) ?
+          GenerateData.needGenerateData(config.isGenerateDataFile) ?
             () : jsonFileName |> _getFilePath |> Fs.existsSync |> assertTrue
         )
       )
   );
-  switch (GenerateData.needGenerateData(config.generateDataFilePath)) {
+  let dataFilePath = _getFilePath(jsonFileName);
+  switch (GenerateData.needGenerateData(config.isGenerateDataFile)) {
   | false =>
-    let stateJson = Fs.readFileSync(_getFilePath(jsonFileName), `utf8) |> Js.Json.parseExn;
-    stateJson |> _convertStateJsonToRecord(page, browser, scriptFilePath, config)
+    let stateJson = Fs.readFileSync(dataFilePath, `utf8) |> Js.Json.parseExn;
+    stateJson |> _convertStateJsonToRecord(page, browser, scriptFilePath, dataFilePath, config)
   | true =>
     GenerateData.convertStateJsonToRecord(
       page,
       browser,
       scriptFilePath,
+      dataFilePath,
       GenerateData.getConfig(config)
     )
   }
 };
 
 let prepareBeforeAll = (state) =>
-  GenerateData.needGenerateData(BenchmarkStateUtils.getConfig(state).generateDataFilePath) ?
+  GenerateData.needGenerateData(BenchmarkStateUtils.getConfig(state).isGenerateDataFile) ?
     {
-      GenerateData.createEmptyDataFile(GenerateData.unsafeGetFilePath(state));
+      GenerateData.createEmptyDataFile(GenerateData.getFilePath(state));
       state
     } :
     state;
@@ -101,6 +105,7 @@ let createEmptyState = () => {
   page: Obj.magic(0),
   browser: Obj.magic(1),
   scriptFilePathList: [],
+  dataFilePath: "",
   name: "",
   caseList: [],
   result: None,
@@ -406,7 +411,7 @@ let compare = ((expect, toBe), promise) =>
            memory: actualMemory
          }: result =
            result |> Js.Option.getExn;
-         GenerateData.needGenerateData(BenchmarkStateUtils.getConfig(state).generateDataFilePath) ?
+         GenerateData.needGenerateData(BenchmarkStateUtils.getConfig(state).isGenerateDataFile) ?
            {
              let state =
                GenerateData.writeCaseDataStr(
@@ -434,4 +439,5 @@ let compare = ((expect, toBe), promise) =>
 
 let generateDataFile = GenerateData.generateDataFile;
 
-let needGenerateData = (state) => GenerateData.needGenerateData(GenerateData.getFilePath(state));
+let needGenerateData = (state) =>
+  GenerateData.needGenerateData(GenerateData.getIsGenerateDataFile(state));

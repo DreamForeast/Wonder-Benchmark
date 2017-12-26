@@ -2,10 +2,7 @@ open BenchmarkType;
 
 open Node;
 
-let getFilePath = (state) => BenchmarkStateUtils.getConfig(state).generateDataFilePath;
-
-let unsafeGetFilePath = (state) =>
-  BenchmarkStateUtils.getConfig(state).generateDataFilePath |> Js.Option.getExn;
+let getFilePath = (state) => state.dataFilePath;
 
 let getConfig = (config) => {
   ...config,
@@ -13,10 +10,13 @@ let getConfig = (config) => {
   extremeCount: config.extremeCount * 2
 };
 
-let needGenerateData = (generateDataFilePath) =>
-  switch (CommandTool.hasOption("jest_performance_generate.json")) {
-  | false => false
-  | true => generateDataFilePath |> Js.Option.isSome
+let getIsGenerateDataFile = (state) => BenchmarkStateUtils.getConfig(state).isGenerateDataFile;
+
+let needGenerateData = (isGenerateDataFile) =>
+  switch (CommandTool.hasOption("jest_performance_generate.json"), isGenerateDataFile) {
+  | (false, _)
+  | (_, false) => false
+  | _ => true
   };
 
 let _buildTimeCaseStr = (actualTimeDataArray) =>
@@ -42,7 +42,7 @@ let buildTimeArr = (timeTextArray: array(string), actualTimeArray) =>
 let _getActualCaseDataList = (state) => state.actualCaseDataList;
 
 let writeCaseDataStr = (name, actualTimeDataArray, actualMemory, errorRate, state) => {
-  let filePath = unsafeGetFilePath(state);
+  let filePath = getFilePath(state);
   let timeCaseStr = _buildTimeCaseStr(actualTimeDataArray);
   Fs.readFileAsUtf8Sync(filePath)
   ++ {j|
@@ -60,7 +60,7 @@ let writeCaseDataStr = (name, actualTimeDataArray, actualMemory, errorRate, stat
 };
 
 let generateDataFile = (state) => {
-  let filePath = unsafeGetFilePath(state);
+  let filePath = getFilePath(state);
   let fileName = Path.basename_ext(filePath, ".json");
   let caseDataStr = Fs.readFileAsUtf8Sync(filePath);
   let caseDataStr =
@@ -78,13 +78,14 @@ let generateDataFile = (state) => {
 let createEmptyDataFile = (generateDataFilePath: string) =>
   Fs.writeFileAsUtf8Sync(generateDataFilePath, "");
 
-let convertStateJsonToRecord = (page, browser, scriptFilePath, config: config) =>
+let convertStateJsonToRecord = (page, browser, scriptFilePath, dataFilePath, config: config) =>
   Json.(
     Decode.{
       config,
       page,
       browser,
       scriptFilePathList: [scriptFilePath],
+      dataFilePath,
       name: "",
       caseList: [],
       result: None,

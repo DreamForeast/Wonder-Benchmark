@@ -64,12 +64,12 @@ let _ =
                        isClosePage: true,
                        execCount: 3,
                        extremeCount: 1,
-                       generateDataFilePath: Some("./test/res/data.json")
+                       isGenerateDataFile: true
                      },
                      p,
                      browser^ |> Js.Option.getExn,
                      "./test/res/script1.js",
-                     ""
+                     "data_generate.json"
                    )
                    |> prepareBeforeAll;
                  p |> resolve

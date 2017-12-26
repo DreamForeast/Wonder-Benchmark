@@ -1,10 +1,10 @@
 {
-         "name": "data",
+         "name": "data_generate",
          "cases": [
            {
                "name": "pf_test1",
                "time": [
-                   {"name":"prepare","time":6},{"name":"init","time":2},{"name":"loopBody","time":4}
+                   {"name":"prepare","time":6},{"name":"init","time":3},{"name":"loopBody","time":4}
                ],
                "memory": 7,
                "error_rate": 5

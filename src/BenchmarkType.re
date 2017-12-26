@@ -23,7 +23,7 @@ type config = {
   isClosePage: bool,
   execCount: int,
   extremeCount: int,
-  generateDataFilePath: option(string)
+  isGenerateDataFile: bool
 };
 
 type state = {
@@ -31,6 +31,7 @@ type state = {
   page: Page.t,
   browser: Browser.t,
   scriptFilePathList: list(string),
+  dataFilePath:string,
   name: string,
   caseList: list(caseItem),
   result: option(result),

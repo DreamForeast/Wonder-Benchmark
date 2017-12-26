@@ -1,5 +1,5 @@
 {
-    "name": "basic boxes",
+    "name": "data",
     "cases": [
         {
             "name": "pf_test",
@@ -14,7 +14,7 @@
                 },
                 {
                     "name": "loopBody",
-                    "time": 3
+                    "time": 2
                 }
             ],
             "memory": 7,
