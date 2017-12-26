@@ -17,6 +17,16 @@ let _ =
       let state = ref(createEmptyState());
       let browser = ref(None);
       let page = ref(None);
+      let _setGenerateDataArgv =
+        [@bs]
+        [%bs.raw
+          {|
+                    function(){
+                        var process = require("process");
+                        process.argv=["jest_performance_generate.json"];
+                    }
+                    |}
+        ];
       beforeEach(() => sandbox := createSandbox());
       afterEach(() => restoreSandbox(refJsObjToSandbox(sandbox^)));
       testPromiseWithTimeout(
@@ -47,6 +57,7 @@ let _ =
           |> then_(
                (p) => {
                  page := Some(p);
+                 [@bs] _setGenerateDataArgv() |> ignore;
                  state :=
                    createState(
                      ~config={
@@ -58,7 +69,7 @@ let _ =
                      p,
                      browser^ |> Js.Option.getExn,
                      "./test/res/script1.js",
-                     "data.json"
+                     ""
                    )
                    |> prepareBeforeAll;
                  p |> resolve

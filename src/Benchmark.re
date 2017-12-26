@@ -66,23 +66,32 @@ let createState =
       jsonFileName: string
     ) => {
   requireCheck(
-    () => Contract.Operators.(jsonFileName |> _getFilePath |> Fs.existsSync |> assertTrue)
+    () =>
+      Contract.(
+        Operators.(
+          GenerateData.needGenerateData(config.generateDataFilePath) ?
+            () : jsonFileName |> _getFilePath |> Fs.existsSync |> assertTrue
+        )
+      )
   );
-  let stateJson = Fs.readFileSync(_getFilePath(jsonFileName), `utf8) |> Js.Json.parseExn;
-  stateJson
-  |> _convertStateJsonToRecord(
-       page,
-       browser,
-       scriptFilePath,
-       GenerateData.needGenerateData(config.generateDataFilePath) ?
-         GenerateData.getConfig(config) : config
-     )
+  switch (GenerateData.needGenerateData(config.generateDataFilePath)) {
+  | false =>
+    let stateJson = Fs.readFileSync(_getFilePath(jsonFileName), `utf8) |> Js.Json.parseExn;
+    stateJson |> _convertStateJsonToRecord(page, browser, scriptFilePath, config)
+  | true =>
+    GenerateData.convertStateJsonToRecord(
+      page,
+      browser,
+      scriptFilePath,
+      GenerateData.getConfig(config)
+    )
+  }
 };
 
 let prepareBeforeAll = (state) =>
   GenerateData.needGenerateData(BenchmarkStateUtils.getConfig(state).generateDataFilePath) ?
     {
-      GenerateData.cleanDataFile(GenerateData.unsafeGetFilePath(state));
+      GenerateData.createEmptyDataFile(GenerateData.unsafeGetFilePath(state));
       state
     } :
     state;
@@ -402,3 +411,5 @@ let compare = ((expect, toBe), promise) =>
      );
 
 let generateDataFile = GenerateData.generateDataFile;
+
+let needGenerateData = (state) => GenerateData.needGenerateData(GenerateData.getFilePath(state));
