@@ -12,18 +12,19 @@ type caseItem = {
 
 type result = {
   name: string,
+  timestamp: int,
   timeArray: array(int),
   memory: int
 };
 
 [@bs.deriving jsConverter]
-type t = {isClosePage: bool};
+type t = {isClosePage: bool, execCount: int, extremeCount:int};
 
 type state = {
   config:t,
   page: Page.t,
   browser: Browser.t,
-  scriptFilePath: string,
+  scriptFilePathList: list(string),
   name: string,
   cases: array(caseItem),
   result: option(result)
@@ -36,4 +37,4 @@ type resultTimeData = {
 
 type compareConfig = {errorRate: float};
 
-type config = {. "isClosePage": bool};
+type config = {. "isClosePage": bool, "execCount": int, "extremeCount": int};

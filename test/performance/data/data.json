@@ -2,7 +2,7 @@
     "name": "basic boxes",
     "cases": [
         {
-            "name": "create_20k_boxes",
+            "name": "pf_test",
             "time": [
                 {
                     "name": "prepare",

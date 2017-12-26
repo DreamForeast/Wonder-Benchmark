@@ -18,7 +18,7 @@ let _convertStateJsonToRecord = (page, browser, scriptFilePath, config: config, 
       config: tFromJs(config),
       page,
       browser,
-      scriptFilePath,
+      scriptFilePathList: [scriptFilePath],
       name: stateJson |> field("name", string),
       cases:
         stateJson
@@ -55,7 +55,13 @@ let _getFilePath = (jsonFileName: string) =>
   Path.join([|Process.cwd(), "test/performance/data", jsonFileName|]);
 
 let createState =
-    (~config: config={"isClosePage": true}, page, browser, scriptFilePath, jsonFileName: string) => {
+    (
+      ~config: config={"isClosePage": true, "execCount": 10, "extremeCount": 2},
+      page,
+      browser,
+      scriptFilePath,
+      jsonFileName: string
+    ) => {
   requireCheck(
     () => Contract.Operators.(jsonFileName |> _getFilePath |> Fs.existsSync |> assertTrue)
   );
@@ -67,7 +73,7 @@ let createEmptyState = () => {
   config: Obj.magic(0),
   page: Obj.magic(0),
   browser: Obj.magic(1),
-  scriptFilePath: "",
+  scriptFilePathList: [],
   name: "",
   cases: [||],
   result: None
@@ -83,6 +89,12 @@ let _average = (promise) =>
   |> then_(
        ((resultDataTimeArr, resultDataMemoryArr)) =>
          (
+           resultDataTimeArr
+           |> Js.Array.reduce(
+                ((sumTime, resultDataArr), {timestamp}) => (sumTime + timestamp, resultDataArr),
+                (0, resultDataTimeArr)
+              )
+           |> (((sumTime, resultDataTimeArr)) => sumTime / (resultDataTimeArr |> Js.Array.length)),
            resultDataTimeArr
            |> Js.Array.reduce(
                 ((sumTimeArr, resultDataArr), {timeArray}) => (
@@ -168,19 +180,24 @@ let _computePerformanceTime = (timeArr: array(float)) => {
      )
 };
 
-let _getScriptFilePath = (state) => state.scriptFilePath;
+let _getScriptFilePathList = (state) => state.scriptFilePathList;
 
-let _addScript = (scriptFilePath, promise) =>
-  promise
-  |> then_(
-       ((page, resultDataArr)) =>
-         page
-         |> Page.addScriptTag({
-              "url": Js.Nullable.empty,
-              "content": Js.Nullable.empty,
-              "path": Js.Nullable.return(scriptFilePath)
-            })
-         |> then_((_) => (page, resultDataArr) |> resolve)
+let _addScript = (scriptFilePathList, promise) =>
+  scriptFilePathList
+  |> List.fold_left(
+       (promise, scriptFilePath) =>
+         promise
+         |> then_(
+              ((page, resultDataArr)) =>
+                page
+                |> Page.addScriptTag({
+                     "url": Js.Nullable.empty,
+                     "content": Js.Nullable.empty,
+                     "path": Js.Nullable.return(scriptFilePath)
+                   })
+                |> then_((_) => (page, resultDataArr) |> resolve)
+            ),
+       promise
      );
 
 let _getConfig = (state) => state.config;
@@ -190,7 +207,7 @@ let _execFunc = (browser, func, state, promise) =>
   |> then_(
        (resultData) => browser |> Browser.newPage |> then_((page) => (page, resultData) |> resolve)
      )
-  |> _addScript(_getScriptFilePath(state))
+  |> _addScript(_getScriptFilePathList(state))
   |> then_(
        ((page, resultData)) =>
          page |> Page.metrics() |> then_((data) => (page, resultData, data) |> resolve)
@@ -240,18 +257,33 @@ let _getPage = (state) => state.page;
 
 let _getBrowser = (state) => state.browser;
 
+let _getExecCount = (state) => state.config.execCount;
+
+let _getExtremeCount = (state) => state.config.extremeCount;
+
+let addScript = (scriptFilePath: string, state: state) : state => {
+  ...state,
+  scriptFilePathList: [scriptFilePath, ...state.scriptFilePathList]
+};
+
+let addScriptList = (scriptFilePathList: list(string), state: state) : state => {
+  ...state,
+  scriptFilePathList: scriptFilePathList @ state.scriptFilePathList
+};
+
 let exec = (name: string, func, state) => {
   let page = state |> _getPage;
   let browser = state |> _getBrowser;
   state
-  |> _execSpecificCount(10, func, browser)
-  |> _removeExtreme(2)
+  |> _execSpecificCount(_getExecCount(state), func, browser)
+  |> _removeExtreme(_getExtremeCount(state))
   |> _average
   |> (
     (promise) =>
       promise
       |> then_(
-           ((timeArray, memory)) => {...state, result: Some({name, timeArray, memory})} |> resolve
+           ((timestamp, timeArray, memory)) =>
+             {...state, result: Some({name, timestamp, timeArray, memory})} |> resolve
          )
   )
 };
@@ -299,7 +331,7 @@ let compare = ((expect, toBe), promise) =>
   promise
   |> then_(
        ({cases, result}) => {
-         let {name, timeArray: actualTimeArray, memory: actualMemory}: result =
+         let {name, timestamp: actualTimestamp, timeArray: actualTimeArray, memory: actualMemory}: result =
            result |> Js.Option.getExn;
          let {time: targetTimeDataArray, memory: targetMemory, errorRate}: caseItem =
            _findFirst(cases, (item: caseItem) => _filterTargetName(item.name, name));
@@ -307,6 +339,8 @@ let compare = ((expect, toBe), promise) =>
          let (isFail, failMessage) =
            _compareMemory(actualMemory, targetMemory, errorRate)
            |> _compareTime(actualTimeArray, targetTimeDataArray, errorRate);
-         isFail ? failwith(failMessage) : true |> expect |> toBe(true) |> resolve
+         isFail ?
+           failwith({j|actualTimestamp is $actualTimestamp\n$failMessage|j}) :
+           true |> expect |> toBe(true) |> resolve
        }
      );

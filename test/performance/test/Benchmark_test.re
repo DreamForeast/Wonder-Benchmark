@@ -45,10 +45,9 @@ let _ =
                  page := Some(p);
                  state :=
                    createState(
-                     ~config = {"isClosePage": true},
                      p,
                      browser^ |> Js.Option.getExn,
-                     "./test/res/script.js",
+                     "./test/res/script1.js",
                      "data.json"
                    );
                  p |> resolve
@@ -60,9 +59,9 @@ let _ =
       afterEach(() => restoreSandbox(refJsObjToSandbox(sandbox^)));
       describe(
         "test performance by compare with json data",
-        () =>
+        () => {
           testPromiseWithTimeout(
-            "create 20k boxes",
+            "test exec and compare",
             () => {
               let body = [%bs.raw
                 {| function() {
@@ -94,10 +93,96 @@ return [n1, n2, n3, n4]
 }
 |}
               ];
-              state^ |> exec("create_20k_boxes", [@bs] body) |> compare((expect, toBe))
+              state^ |> exec("pf_test", [@bs] body) |> compare((expect, toBe))
             },
             16000
+          );
+          describe(
+            "test add more script",
+            () => {
+              testPromiseWithTimeout(
+                "test addScript",
+                () => {
+                  let body = [%bs.raw
+                    {| function() {
+                    function test(){
+                        var arr = [];
+                        for(var i = 0; i <= 100000; i++){
+                        arr[i] = minus(3, wd.add(1, 2));
+                        }
+                    }
+var n1 = performance.now();
+test();
+
+var n2 = performance.now();
+
+test();
+
+
+var n3 = performance.now();
+
+
+test();
+test();
+
+
+var n4 = performance.now();
+
+
+return [n1, n2, n3, n4]
+}
+|}
+                  ];
+                  state^
+                  |> addScript("./test/res/script2.js")
+                  |> exec("pf_test", [@bs] body)
+                  |> compare((expect, toBe))
+                },
+                16000
+              );
+              testPromiseWithTimeout(
+                "test addScriptList",
+                () => {
+                  let body = [%bs.raw
+                    {| function() {
+                    function test(){
+                        var arr = [];
+                        for(var i = 0; i <= 100000; i++){
+                        arr[i] = minus2(10, minus(3, wd.add(1, 2)));
+                        }
+                    }
+var n1 = performance.now();
+test();
+
+var n2 = performance.now();
+
+test();
+
+
+var n3 = performance.now();
+
+
+test();
+test();
+
+
+var n4 = performance.now();
+
+
+return [n1, n2, n3, n4]
+}
+|}
+                  ];
+                  state^
+                  |> addScriptList(["./test/res/script2.js", "./test/res/script3.js"])
+                  |> exec("pf_test", [@bs] body)
+                  |> compare((expect, toBe))
+                },
+                16000
+              )
+            }
           )
+        }
       )
     }
   );
