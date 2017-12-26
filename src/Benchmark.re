@@ -344,12 +344,26 @@ let _getRange = (target, errorRate) => (
 
 let _isInRange = (actual, (min, max)) => actual >= min && actual <= max;
 
+let _getDiffPercentStr = (actualValue, targetValue) => {
+  let percent =
+    (actualValue - targetValue |> Js.Math.abs_int |> Number.intToFloat)
+    /. (targetValue |> Number.intToFloat)
+    *. 100.0
+    |> Js.Math.round;
+  switch (actualValue - targetValue) {
+  | value when value >= 0 => {j|+$percent%|j}
+  | _ => {j|-$percent%|j}
+  }
+};
+
 let _compareMemory = (actualMemory, targetMemory, errorRate) => {
   let (minMemory, maxMemory) = _getRange(targetMemory, errorRate);
   switch (_isInRange(actualMemory, (minMemory, maxMemory))) {
-  | false => (
+  | false =>
+    let diff = _getDiffPercentStr(actualMemory, targetMemory);
+    (
       true,
-      {j|expect memory to in [$minMemory, $maxMemory], but actual is $actualMemory\n|j}
+      {j|expect memory to in [$minMemory, $maxMemory], but actual is $actualMemory. the diff is $diff\n|j}
     )
   | true => (false, "")
   }
@@ -364,10 +378,12 @@ let _compareTime =
          let (minTime, maxTime) = _getRange(targetTime, errorRate);
          let actualTime = actualTimeArray[index];
          switch (_isInRange(actualTime, (minTime, maxTime))) {
-         | false => (
+         | false =>
+           let diff = _getDiffPercentStr(actualTime, targetTime);
+           (
              true,
              failMessage
-             ++ {j|expect time:$name to in [$minTime, $maxTime], but actual is $actualTime\n|j}
+             ++ {j|expect time:$name to in [$minTime, $maxTime], but actual is $actualTime. the diff is $diff\n|j}
            )
          | true => (isFail, failMessage)
          }
