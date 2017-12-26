@@ -15,7 +15,7 @@ open BenchmarkType;
 let _convertStateJsonToRecord = (page, browser, scriptFilePath, config: config, stateJson) =>
   Json.(
     Decode.{
-      config: tFromJs(config),
+      config,
       page,
       browser,
       scriptFilePathList: [scriptFilePath],
@@ -56,7 +56,7 @@ let _getFilePath = (jsonFileName: string) =>
 
 let createState =
     (
-      ~config: config={"isClosePage": true, "execCount": 10, "extremeCount": 2},
+      ~config={isClosePage: true, execCount: 10, extremeCount: 2},
       page,
       browser,
       scriptFilePath,
