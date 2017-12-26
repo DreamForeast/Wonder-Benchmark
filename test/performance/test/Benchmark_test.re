@@ -1,4 +1,4 @@
-/* open Wonder_jest;
+open Wonder_jest;
 
 open Benchmark;
 
@@ -89,7 +89,7 @@ test();
 var n4 = performance.now();
 
 
-return [n1, n2, n3, n4]
+return {"errorRate": 5, "textArray": ["prepare", "init", "loopBody"], "timeArray": [n1, n2, n3, n4] }
 }
 |}
               ];
@@ -129,7 +129,7 @@ test();
 var n4 = performance.now();
 
 
-return [n1, n2, n3, n4]
+return {"errorRate": 5, "textArray": ["prepare", "init", "loopBody"], "timeArray": [n1, n2, n3, n4] }
 }
 |}
                   ];
@@ -169,7 +169,7 @@ test();
 var n4 = performance.now();
 
 
-return [n1, n2, n3, n4]
+return {"errorRate": 5, "textArray": ["prepare", "init", "loopBody"], "timeArray": [n1, n2, n3, n4] }
 }
 |}
                   ];
@@ -185,32 +185,4 @@ return [n1, n2, n3, n4]
         }
       )
     }
-  ); */
-  open Wonder_jest;
-  let _ =
-  describe
-  ("", 
-  (
-  () => {
-  open Expect;
-  open Expect.Operators;
-  open Sinon;
-  let sandbox = getSandboxDefaultVal ();
-  /* let state = ref (StateSystem.createState ()); */
-  /* beforeEach(()=>{
-  sandbox := createSandbox ();
-  state := TestTool.init (~sandbox, ())
-  
-  });
-  afterEach(()=>{
-  restoreSandbox(refJsObjToSandbox(sandbox^))
-  }); */
-test
-("", 
-(
-() => {
-expect(1) == 1
-})
-);  
-  })
   );
