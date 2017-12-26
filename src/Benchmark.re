@@ -13,13 +13,13 @@ open Js.Promise;
 open BenchmarkType;
 
 let _convertStateJsonToRecord =
-    (page, browser, scriptFilePath, dataFilePath, config: config, stateJson) =>
+    (page, browser, scriptFilePathList, dataFilePath, config: config, stateJson) =>
   Json.(
     Decode.{
       config,
       page,
       browser,
-      scriptFilePathList: [scriptFilePath],
+      scriptFilePathList,
       dataFilePath,
       name: stateJson |> field("name", string),
       caseList:
@@ -63,7 +63,7 @@ let createState =
       ~config={isClosePage: true, execCount: 10, extremeCount: 2, isGenerateDataFile: false},
       page,
       browser,
-      scriptFilePath,
+      scriptFilePathList,
       jsonFileName: string
     ) => {
   requireCheck(
@@ -79,12 +79,12 @@ let createState =
   switch (GenerateData.needGenerateData(config.isGenerateDataFile)) {
   | false =>
     let stateJson = Fs.readFileSync(dataFilePath, `utf8) |> Js.Json.parseExn;
-    stateJson |> _convertStateJsonToRecord(page, browser, scriptFilePath, dataFilePath, config)
+    stateJson |> _convertStateJsonToRecord(page, browser, scriptFilePathList, dataFilePath, config)
   | true =>
     GenerateData.convertStateJsonToRecord(
       page,
       browser,
-      scriptFilePath,
+      scriptFilePathList,
       dataFilePath,
       GenerateData.getConfig(config)
     )

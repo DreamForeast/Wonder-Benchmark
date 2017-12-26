@@ -4,7 +4,7 @@
            {
                "name": "pf_test1",
                "time": [
-                   {"name":"prepare","time":5},{"name":"init","time":2},{"name":"loopBody","time":5}
+                   {"name":"prepare","time":6},{"name":"init","time":2},{"name":"loopBody","time":4}
                ],
                "memory": 7,
                "error_rate": 5

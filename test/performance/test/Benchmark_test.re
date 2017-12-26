@@ -47,7 +47,7 @@ let _ =
                    createState(
                      p,
                      browser^ |> Js.Option.getExn,
-                     "./test/res/script1.js",
+                     ["./test/res/script1.js"],
                      "data.json"
                    );
                  p |> resolve

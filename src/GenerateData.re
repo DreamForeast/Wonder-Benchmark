@@ -76,13 +76,13 @@ let generateDataFile = (state) => {
 let createEmptyDataFile = (generateDataFilePath: string) =>
   Fs.writeFileAsUtf8Sync(generateDataFilePath, "");
 
-let convertStateJsonToRecord = (page, browser, scriptFilePath, dataFilePath, config: config) =>
+let convertStateJsonToRecord = (page, browser, scriptFilePathList, dataFilePath, config: config) =>
   Json.(
     Decode.{
       config,
       page,
       browser,
-      scriptFilePathList: [scriptFilePath],
+      scriptFilePathList,
       dataFilePath,
       name: "",
       caseList: [],
