@@ -20,7 +20,7 @@ let _convertStateJsonToRecord = (page, browser, scriptFilePath, config: config, 
       browser,
       scriptFilePathList: [scriptFilePath],
       name: stateJson |> field("name", string),
-      cases:
+      caseList:
         stateJson
         |> field(
              "cases",
@@ -41,13 +41,16 @@ let _convertStateJsonToRecord = (page, browser, scriptFilePath, config: config, 
                                       time: json |> field("time", int)
                                     }
                                   )
+                               |> Array.to_list
                            ),
                       memory: stateJson |> field("memory", int),
                       errorRate: stateJson |> optional(field("error_rate", int))
                     }
                   )
+               |> Array.to_list
            ),
-      result: None
+      result: None,
+      actualCaseDataList: []
     }
   );
 
@@ -56,7 +59,7 @@ let _getFilePath = (jsonFileName: string) =>
 
 let createState =
     (
-      ~config={isClosePage: true, execCount: 10, extremeCount: 2},
+      ~config={isClosePage: true, execCount: 10, extremeCount: 2, generateDataFilePath: None},
       page,
       browser,
       scriptFilePath,
@@ -66,8 +69,23 @@ let createState =
     () => Contract.Operators.(jsonFileName |> _getFilePath |> Fs.existsSync |> assertTrue)
   );
   let stateJson = Fs.readFileSync(_getFilePath(jsonFileName), `utf8) |> Js.Json.parseExn;
-  stateJson |> _convertStateJsonToRecord(page, browser, scriptFilePath, config)
+  stateJson
+  |> _convertStateJsonToRecord(
+       page,
+       browser,
+       scriptFilePath,
+       GenerateData.needGenerateData(config.generateDataFilePath) ?
+         GenerateData.getConfig(config) : config
+     )
 };
+
+let prepareBeforeAll = (state) =>
+  GenerateData.needGenerateData(BenchmarkStateUtils.getConfig(state).generateDataFilePath) ?
+    {
+      GenerateData.cleanDataFile(GenerateData.unsafeGetFilePath(state));
+      state
+    } :
+    state;
 
 let createEmptyState = () => {
   config: Obj.magic(0),
@@ -75,29 +93,39 @@ let createEmptyState = () => {
   browser: Obj.magic(1),
   scriptFilePathList: [],
   name: "",
-  cases: [||],
-  result: None
+  caseList: [],
+  result: None,
+  actualCaseDataList: []
 };
 
-let _findFirst = (arr: array('item), func) => arr |> ArraySystem.unsafeFind(func);
+let _findFirst = (list: list('item), func) => list |> List.find(func);
 
 let _buildSumTimeArr = (resultDataTimeArr) =>
   ArraySystem.range(0, Js.Array.length(resultDataTimeArr[0].timeArray) - 1);
+
+let _getErrorRate = (resultDataTimeArr) => resultDataTimeArr[0].errorRate;
+
+let _getTimeTextArray = (resultDataTimeArr) => resultDataTimeArr[0].timeTextArray;
 
 let _average = (promise) =>
   promise
   |> then_(
        ((resultDataTimeArr, resultDataMemoryArr)) =>
          (
+           _getErrorRate(resultDataTimeArr),
            resultDataTimeArr
            |> Js.Array.reduce(
-                ((sumTime, resultDataArr), {timestamp}) => (sumTime + timestamp, resultDataArr),
+                ((sumTime, resultDataArr), {timestamp}: resultTimeData) => (
+                  sumTime + timestamp,
+                  resultDataArr
+                ),
                 (0, resultDataTimeArr)
               )
            |> (((sumTime, resultDataTimeArr)) => sumTime / (resultDataTimeArr |> Js.Array.length)),
+           _getTimeTextArray(resultDataTimeArr),
            resultDataTimeArr
            |> Js.Array.reduce(
-                ((sumTimeArr, resultDataArr), {timeArray}) => (
+                ((sumTimeArr, resultDataArr), {timeArray}: resultTimeData) => (
                   sumTimeArr |> Js.Array.mapi((sum, index) => sum + timeArray[index]),
                   resultDataArr
                 ),
@@ -200,9 +228,7 @@ let _addScript = (scriptFilePathList, promise) =>
        promise
      );
 
-let _getConfig = (state) => state.config;
-
-let _execFunc = (browser, func, state, promise) =>
+let _execFunc = (browser, func: unit => funcReturnValue, state, promise) =>
   promise
   |> then_(
        (resultData) => browser |> Browser.newPage |> then_((page) => (page, resultData) |> resolve)
@@ -216,20 +242,22 @@ let _execFunc = (browser, func, state, promise) =>
        ((page, resultData, data)) =>
          page
          |> Page.evaluate([@bs] func)
-         |> then_((timeArr) => resolve((page, resultData, data, timeArr)))
+         |> then_((timeData: funcReturnValue) => resolve((page, resultData, data, timeData)))
      )
   |> then_(
-       ((page, resultData, lastData, timeArr)) =>
+       ((page, resultData, lastData, timeData)) =>
          page
          |> Page.metrics()
-         |> then_((data) => (page, resultData, lastData, data, timeArr) |> resolve)
+         |> then_((data) => (page, resultData, lastData, data, timeData) |> resolve)
      )
   |> then_(
-       ((page, (resultDataTimeArr, resultDataMemoryArr), lastData, data, timeArr)) => {
+       ((page, (resultDataTimeArr, resultDataMemoryArr), lastData, data, timeData)) => {
          resultDataTimeArr
          |> Js.Array.push({
+              errorRate: timeData##errorRate,
               timestamp: _computeTimestamp(lastData, data),
-              timeArray: _computePerformanceTime(timeArr)
+              timeTextArray: timeData##textArray,
+              timeArray: _computePerformanceTime(timeData##timeArray)
             })
          |> ignore;
          resultDataMemoryArr |> Js.Array.push(_computeMemory(lastData, data)) |> ignore;
@@ -238,7 +266,7 @@ let _execFunc = (browser, func, state, promise) =>
      )
   |> then_(
        ((page, resultData)) => {
-         let isClosePage = _getConfig(state).isClosePage;
+         let isClosePage = BenchmarkStateUtils.getConfig(state).isClosePage;
          switch isClosePage {
          | false => resultData |> resolve
          | true => page |> Page.close |> then_((_) => resultData |> resolve)
@@ -246,7 +274,7 @@ let _execFunc = (browser, func, state, promise) =>
        }
      );
 
-let _execSpecificCount = (count, func, browser, state) =>
+let _execSpecificCount = (count, func: unit => funcReturnValue, browser, state) =>
   ArraySystem.range(0, count - 1)
   |> Js.Array.reduce(
        (promise, _) => promise |> _execFunc(browser, func, state),
@@ -271,7 +299,7 @@ let addScriptList = (scriptFilePathList: list(string), state: state) : state => 
   scriptFilePathList: scriptFilePathList @ state.scriptFilePathList
 };
 
-let exec = (name: string, func, state) => {
+let exec = (name: string, func: unit => funcReturnValue, state) => {
   let page = state |> _getPage;
   let browser = state |> _getBrowser;
   state
@@ -282,8 +310,12 @@ let exec = (name: string, func, state) => {
     (promise) =>
       promise
       |> then_(
-           ((timestamp, timeArray, memory)) =>
-             {...state, result: Some({name, timestamp, timeArray, memory})} |> resolve
+           ((errorRate, timestamp, timeTextArray, timeArray, memory)) =>
+             {
+               ...state,
+               result: Some({name, errorRate, timestamp, timeTextArray, timeArray, memory})
+             }
+             |> resolve
          )
   )
 };
@@ -309,8 +341,9 @@ let _compareMemory = (actualMemory, targetMemory, errorRate) => {
 };
 
 let _compareTime =
-    (actualTimeArray, targetTimeDataArray: array(caseTimeItem), errorRate, (isFail, failMessage)) =>
-  targetTimeDataArray
+    (actualTimeArray, targetTimeDataList: list(caseTimeItem), errorRate, (isFail, failMessage)) =>
+  targetTimeDataList
+  |> Array.of_list
   |> Js.Array.reducei(
        ((isFail, failMessage), {name, time: targetTime}: caseTimeItem, index) => {
          let (minTime, maxTime) = _getRange(targetTime, errorRate);
@@ -327,20 +360,45 @@ let _compareTime =
        (isFail, failMessage)
      );
 
+let _pass = (expect, toBe) => true |> expect |> toBe(true) |> resolve;
+
 let compare = ((expect, toBe), promise) =>
   promise
   |> then_(
-       ({cases, result}) => {
-         let {name, timestamp: actualTimestamp, timeArray: actualTimeArray, memory: actualMemory}: result =
+       ({caseList, result} as state) => {
+         let {
+           name,
+           errorRate,
+           timestamp: actualTimestamp,
+           timeTextArray,
+           timeArray: actualTimeArray,
+           memory: actualMemory
+         }: result =
            result |> Js.Option.getExn;
-         let {time: targetTimeDataArray, memory: targetMemory, errorRate}: caseItem =
-           _findFirst(cases, (item: caseItem) => _filterTargetName(item.name, name));
-         let errorRate = errorRate |> Js.Option.getExn;
-         let (isFail, failMessage) =
-           _compareMemory(actualMemory, targetMemory, errorRate)
-           |> _compareTime(actualTimeArray, targetTimeDataArray, errorRate);
-         isFail ?
-           failwith({j|actualTimestamp is $actualTimestamp\n$failMessage|j}) :
-           true |> expect |> toBe(true) |> resolve
+         GenerateData.needGenerateData(BenchmarkStateUtils.getConfig(state).generateDataFilePath) ?
+           {
+             let state =
+               GenerateData.writeCaseDataStr(
+                 name,
+                 GenerateData.buildTimeArr(timeTextArray, actualTimeArray),
+                 actualMemory,
+                 errorRate,
+                 state
+               );
+             _pass(expect, toBe)
+           } :
+           {
+             let {time: targetTimeDataList, memory: targetMemory, errorRate}: caseItem =
+               _findFirst(caseList, (item: caseItem) => _filterTargetName(item.name, name));
+             let errorRate = errorRate |> Js.Option.getExn;
+             let (isFail, failMessage) =
+               _compareMemory(actualMemory, targetMemory, errorRate)
+               |> _compareTime(actualTimeArray, targetTimeDataList, errorRate);
+             isFail ?
+               failwith({j|actualTimestamp is $actualTimestamp\n$failMessage|j}) :
+               _pass(expect, toBe)
+           }
        }
      );
+
+let generateDataFile = GenerateData.generateDataFile;

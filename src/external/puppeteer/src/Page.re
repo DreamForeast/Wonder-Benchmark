@@ -157,11 +157,14 @@ type metricsData = {
   "JSHeapTotalSize": int
 };
 
+/* type evaluateFuncReturnValue; */
+
 [@bs.send.pipe : t] external addScriptTag : scriptTagOptions => Js.Promise.t(ElementHandle.t) = "";
 
 /* [@bs.send.pipe : t]
    external evaluate : (unit => Js.Promise.t(evaluteResult)) => Js.Promise.t(serializableT) =
      ""; */
-[@bs.send.pipe : t] external evaluate : (unit => array(float)) => Js.Promise.t(array(float)) = "";
+[@bs.send.pipe : t] external evaluate : (unit => 
+'evaluateFuncReturnValue) => Js.Promise.t('evaluateFuncReturnValue) = "";
 
 [@bs.send.pipe : t] external metrics : unit => Js.Promise.t(metricsData) = "";

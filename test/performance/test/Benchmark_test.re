@@ -1,4 +1,4 @@
-open Wonder_jest;
+/* open Wonder_jest;
 
 open Benchmark;
 
@@ -185,4 +185,32 @@ return [n1, n2, n3, n4]
         }
       )
     }
+  ); */
+  open Wonder_jest;
+  let _ =
+  describe
+  ("", 
+  (
+  () => {
+  open Expect;
+  open Expect.Operators;
+  open Sinon;
+  let sandbox = getSandboxDefaultVal ();
+  /* let state = ref (StateSystem.createState ()); */
+  /* beforeEach(()=>{
+  sandbox := createSandbox ();
+  state := TestTool.init (~sandbox, ())
+  
+  });
+  afterEach(()=>{
+  restoreSandbox(refJsObjToSandbox(sandbox^))
+  }); */
+test
+("", 
+(
+() => {
+expect(1) == 1
+})
+);  
+  })
   );

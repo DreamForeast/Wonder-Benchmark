@@ -5,14 +5,16 @@ type caseTimeItem = {
 
 type caseItem = {
   name: string,
-  time: array(caseTimeItem),
+  time: list(caseTimeItem),
   memory: int,
   errorRate: option(int)
 };
 
 type result = {
   name: string,
+  errorRate: int,
   timestamp: int,
+  timeTextArray: array(string),
   timeArray: array(int),
   memory: int
 };
@@ -20,7 +22,8 @@ type result = {
 type config = {
   isClosePage: bool,
   execCount: int,
-  extremeCount: int
+  extremeCount: int,
+  generateDataFilePath: option(string)
 };
 
 type state = {
@@ -29,13 +32,16 @@ type state = {
   browser: Browser.t,
   scriptFilePathList: list(string),
   name: string,
-  cases: array(caseItem),
-  result: option(result)
+  caseList: list(caseItem),
+  result: option(result),
+  mutable actualCaseDataList: list(string)
 };
 
 type resultTimeData = {
+  errorRate: int,
   timestamp: int,
-  timeArray: array(int)
+  timeArray: array(int),
+  timeTextArray: array(string)
 };
 
-type compareConfig = {errorRate: float};
+type funcReturnValue = {. "errorRate": int, "textArray": array(string), "timeArray": array(float)};
