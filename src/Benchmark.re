@@ -332,8 +332,14 @@ let exec = (name: string, func: unit => funcReturnValue, state) => {
 let _filterTargetName = (name, targetName) => name == targetName;
 
 let _getRange = (target, errorRate) => (
-  target * (100 - errorRate) / 100,
-  target * (100 + errorRate) / 100
+  (target |> Number.intToFloat)
+  *. (100. -. (errorRate |> Number.intToFloat))
+  /. 100.0
+  |> Js.Math.floor,
+  (target |> Number.intToFloat)
+  *. (100. +. (errorRate |> Number.intToFloat))
+  /. 100.0
+  |> Js.Math.ceil
 );
 
 let _isInRange = (actual, (min, max)) => actual >= min && actual <= max;
