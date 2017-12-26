@@ -51,8 +51,7 @@ let _convertStateJsonToRecord =
                   )
                |> Array.to_list
            ),
-      result: None,
-      actualCaseDataList: []
+      result: None
     }
   );
 
@@ -108,8 +107,7 @@ let createEmptyState = () => {
   dataFilePath: "",
   name: "",
   caseList: [],
-  result: None,
-  actualCaseDataList: []
+  result: None
 };
 
 let _findFirst = (list: list('item), func) => list |> List.find(func);

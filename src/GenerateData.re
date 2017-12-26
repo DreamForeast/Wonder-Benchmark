@@ -39,8 +39,6 @@ let _buildTimeCaseStr = (actualTimeDataArray) =>
 let buildTimeArr = (timeTextArray: array(string), actualTimeArray) =>
   actualTimeArray |> Js.Array.mapi((time, index) => (timeTextArray[index], time));
 
-let _getActualCaseDataList = (state) => state.actualCaseDataList;
-
 let writeCaseDataStr = (name, actualTimeDataArray, actualMemory, errorRate, state) => {
   let filePath = getFilePath(state);
   let timeCaseStr = _buildTimeCaseStr(actualTimeDataArray);
@@ -88,7 +86,6 @@ let convertStateJsonToRecord = (page, browser, scriptFilePath, dataFilePath, con
       dataFilePath,
       name: "",
       caseList: [],
-      result: None,
-      actualCaseDataList: []
+      result: None
     }
   );

@@ -34,8 +34,7 @@ type state = {
   dataFilePath:string,
   name: string,
   caseList: list(caseItem),
-  result: option(result),
-  mutable actualCaseDataList: list(string)
+  result: option(result)
 };
 
 type resultTimeData = {
