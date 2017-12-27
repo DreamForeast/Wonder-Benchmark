@@ -32,7 +32,7 @@ let _ =
       testPromiseWithTimeout(
         "test generate data",
         () => {
-          let generateDataFilePath = "./test/res/data.json";
+          let generateDataFilePath = "./test/performance/data/data_generate.json";
           launch(
             ~options={
               "ignoreHTTPSErrors": Js.Nullable.empty,
@@ -151,6 +151,7 @@ return {"errorRate": 10, "textArray": ["prepare", "init"], "timeArray": [n1, n2,
                         (
                           content |> Js.String.includes({|"name": "pf_test1"|}),
                           content |> Js.String.includes({|"name": "pf_test2"|})
+
                         )
                         |> expect == (true, true)
                         |> resolve
