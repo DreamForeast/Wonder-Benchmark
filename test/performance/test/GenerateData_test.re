@@ -63,7 +63,6 @@ let _ =
                      ~config={
                        isClosePage: true,
                        execCount: 3,
-                       extremeCount: 1,
                        isGenerateDataFile: true
                      },
                      p,

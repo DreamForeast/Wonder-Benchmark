@@ -6,8 +6,7 @@ let getFilePath = (state) => state.dataFilePath;
 
 let getConfig = (config) => {
   ...config,
-  execCount: config.execCount * 2,
-  extremeCount: config.extremeCount * 2
+  execCount: config.execCount * 2
 };
 
 let getIsGenerateDataFile = (state) => BenchmarkStateUtils.getConfig(state).isGenerateDataFile;

@@ -22,7 +22,6 @@ type result = {
 type config = {
   isClosePage: bool,
   execCount: int,
-  extremeCount: int,
   isGenerateDataFile: bool
 };
 

@@ -60,7 +60,7 @@ let _getFilePath = (jsonFileName: string) =>
 
 let createState =
     (
-      ~config={isClosePage: true, execCount: 10, extremeCount: 2, isGenerateDataFile: false},
+      ~config={isClosePage: true, execCount: 10, isGenerateDataFile: false},
       page,
       browser,
       scriptFilePathList,
@@ -263,8 +263,6 @@ let _getPage = (state) => state.page;
 let _getBrowser = (state) => state.browser;
 
 let _getExecCount = (state) => state.config.execCount;
-
-let _getExtremeCount = (state) => state.config.extremeCount;
 
 let addScript = (scriptFilePath: string, state: state) : state => {
   ...state,
