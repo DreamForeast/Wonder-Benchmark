@@ -183,6 +183,40 @@ return {"errorRate": 5, "textArray": ["prepare", "init", "loopBody"], "timeArray
             }
           )
         }
+      );
+      testPromise(
+        "test get median value",
+        () =>
+          BenchmarkType.
+            (
+              BenchmarkTool.getMedian(
+                (
+                  [|
+                    {
+                      errorRate: 5,
+                      timestamp: 100,
+                      timeArray: [|3, 1|],
+                      timeTextArray: [|"a", "b"|]
+                    },
+                    {
+                      errorRate: 6,
+                      timestamp: 10,
+                      timeArray: [|98, 2|],
+                      timeTextArray: [|"a", "b"|]
+                    },
+                    {
+                      errorRate: 50,
+                      timestamp: 11,
+                      timeArray: [|5, 88|],
+                      timeTextArray: [|"a", "b"|]
+                    }
+                  |],
+                  [|100, 1, 3|]
+                )
+                |> resolve
+              )
+              |> then_((data) => data |> expect == (5, 11, [|"a", "b"|], [|5, 2|], 3) |> resolve)
+            )
       )
     }
   );

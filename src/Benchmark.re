@@ -119,61 +119,26 @@ let _getErrorRate = (resultDataTimeArr) => resultDataTimeArr[0].errorRate;
 
 let _getTimeTextArray = (resultDataTimeArr) => resultDataTimeArr[0].timeTextArray;
 
-let _average = (promise) =>
+let _getMedianValue = (arr) => {
+  let sortArr = arr |> Js.Array.sortInPlaceWith((a1, a2) => a1 - a2);
+  sortArr[Js.Array.length(sortArr) / 2]
+};
+
+let _getMedian = (promise) =>
   promise
   |> then_(
        ((resultDataTimeArr, resultDataMemoryArr)) =>
          (
            _getErrorRate(resultDataTimeArr),
            resultDataTimeArr
-           |> Js.Array.reduce(
-                ((sumTime, resultDataArr), {timestamp}: resultTimeData) => (
-                  sumTime + timestamp,
-                  resultDataArr
-                ),
-                (0, resultDataTimeArr)
-              )
-           |> (((sumTime, resultDataTimeArr)) => sumTime / (resultDataTimeArr |> Js.Array.length)),
+           |> Js.Array.map(({timestamp}: resultTimeData) => timestamp)
+           |> _getMedianValue,
            _getTimeTextArray(resultDataTimeArr),
            resultDataTimeArr
-           |> Js.Array.reduce(
-                ((sumTimeArr, resultDataArr), {timeArray}: resultTimeData) => (
-                  sumTimeArr |> Js.Array.mapi((sum, index) => sum + timeArray[index]),
-                  resultDataArr
-                ),
-                (_buildSumTimeArr(resultDataTimeArr), resultDataTimeArr)
-              )
-           |> (
-             ((sumTimeArr, resultDataTimeArr)) =>
-               sumTimeArr
-               |> Js.Array.map((sumTime) => sumTime / (resultDataTimeArr |> Js.Array.length))
-           ),
-           resultDataMemoryArr
-           |> Js.Array.reduce(
-                ((sumMemory, resultDataArr), memory) => (sumMemory + memory, resultDataArr),
-                (0, resultDataMemoryArr)
-              )
-           |> (
-             ((sumMemory, resultDataMemoryArr)) =>
-               sumMemory / (resultDataMemoryArr |> Js.Array.length)
-           )
-         )
-         |> resolve
-     );
-
-let _removeExtreme = (count, promise) =>
-  promise
-  |> then_(
-       ((resultDataTimeArr, resultDataMemoryArr)) =>
-         (
-           resultDataTimeArr
-           |> Js.Array.sortInPlaceWith(
-                ({timestamp: timestamp1}, {timestamp: timestamp2}) => timestamp1 - timestamp2
-              )
-           |> Js.Array.slice(~start=count, ~end_=Js.Array.length(resultDataTimeArr) - count),
-           resultDataMemoryArr
-           |> Js.Array.sortInPlaceWith((memory1, memory2) => memory1 - memory2)
-           |> Js.Array.slice(~start=count, ~end_=Js.Array.length(resultDataMemoryArr) - count)
+           |> Js.Array.map(({timeArray}: resultTimeData) => timeArray)
+           |> ArraySystem.zip
+           |> Js.Array.map((arr) => _getMedianValue(arr)),
+           resultDataMemoryArr |> _getMedianValue
          )
          |> resolve
      );
@@ -316,8 +281,7 @@ let exec = (name: string, func: unit => funcReturnValue, state) => {
   let browser = state |> _getBrowser;
   state
   |> _execSpecificCount(_getExecCount(state), func, browser)
-  |> _removeExtreme(_getExtremeCount(state))
-  |> _average
+  |> _getMedian
   |> (
     (promise) =>
       promise
