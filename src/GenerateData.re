@@ -62,8 +62,15 @@ let generateDataFile = (state) => {
   state
 };
 
-let createEmptyDataFile = (generateDataFilePath: string) =>
-  Fs.writeFileAsUtf8Sync(generateDataFilePath, "");
+let createEmptyDataFile = (generateDataFilePath: string) => {
+  let dirname = generateDataFilePath |> Path.dirname;
+  dirname |> Fs.existsSync ?
+    Fs.writeFileAsUtf8Sync(generateDataFilePath, "") :
+    {
+      NodeExtend.mkdirSync(generateDataFilePath |> Path.dirname);
+      Fs.writeFileAsUtf8Sync(generateDataFilePath, "")
+    }
+};
 
 let convertStateJsonToRecord = (page, browser, scriptFilePathList, dataFilePath, config: config) =>
   Json.(

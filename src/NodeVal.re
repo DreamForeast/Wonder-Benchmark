@@ -1,1 +1,0 @@
-[@bs.val] external __dirname : string = "";

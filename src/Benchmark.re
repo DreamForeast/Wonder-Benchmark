@@ -1,6 +1,6 @@
 open Node;
 
-open NodeVal;
+open NodeExtend;
 
 open Performance;
 
