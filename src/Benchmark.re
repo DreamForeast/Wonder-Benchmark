@@ -60,7 +60,7 @@ let _getFilePath = (jsonFileName: string) =>
 
 let createState =
     (
-      ~config={isClosePage: true, execCount: 10, isGenerateDataFile: false},
+      ~config={isClosePage: true, execCount: 10},
       page,
       browser,
       scriptFilePathList,
@@ -70,13 +70,13 @@ let createState =
     () =>
       Contract.(
         Operators.(
-          GenerateData.needGenerateData(config.isGenerateDataFile) ?
+          GenerateData.needGenerateData() ?
             () : jsonFileName |> _getFilePath |> Fs.existsSync |> assertTrue
         )
       )
   );
   let dataFilePath = _getFilePath(jsonFileName);
-  switch (GenerateData.needGenerateData(config.isGenerateDataFile)) {
+  switch (GenerateData.needGenerateData()) {
   | false =>
     let stateJson = Fs.readFileSync(dataFilePath, `utf8) |> Js.Json.parseExn;
     stateJson |> _convertStateJsonToRecord(page, browser, scriptFilePathList, dataFilePath, config)
@@ -92,7 +92,7 @@ let createState =
 };
 
 let prepareBeforeAll = (state) =>
-  GenerateData.needGenerateData(BenchmarkStateUtils.getConfig(state).isGenerateDataFile) ?
+  GenerateData.needGenerateData() ?
     {
       GenerateData.createEmptyDataFile(GenerateData.getFilePath(state));
       state
@@ -371,7 +371,7 @@ let compare = ((expect, toBe), promise) =>
            memory: actualMemory
          }: result =
            result |> Js.Option.getExn;
-         GenerateData.needGenerateData(BenchmarkStateUtils.getConfig(state).isGenerateDataFile) ?
+         GenerateData.needGenerateData() ?
            {
              let state =
                GenerateData.writeCaseDataStr(
@@ -399,5 +399,4 @@ let compare = ((expect, toBe), promise) =>
 
 let generateDataFile = GenerateData.generateDataFile;
 
-let needGenerateData = (state) =>
-  GenerateData.needGenerateData(GenerateData.getIsGenerateDataFile(state));
+let needGenerateData = (state) => GenerateData.needGenerateData();

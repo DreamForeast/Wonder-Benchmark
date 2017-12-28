@@ -62,8 +62,7 @@ let _ =
                    createState(
                      ~config={
                        isClosePage: true,
-                       execCount: 3,
-                       isGenerateDataFile: true
+                       execCount: 3
                      },
                      p,
                      browser^ |> Js.Option.getExn,

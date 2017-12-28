@@ -4,19 +4,9 @@ open Node;
 
 let getFilePath = (state) => state.dataFilePath;
 
-let getConfig = (config) => {
-  ...config,
-  execCount: config.execCount * 2
-};
+let getConfig = (config) => {...config, execCount: config.execCount * 2};
 
-let getIsGenerateDataFile = (state) => BenchmarkStateUtils.getConfig(state).isGenerateDataFile;
-
-let needGenerateData = (isGenerateDataFile) =>
-  switch (CommandTool.hasOption("jest_performance_generate.json"), isGenerateDataFile) {
-  | (false, _)
-  | (_, false) => false
-  | _ => true
-  };
+let needGenerateData = () => CommandTool.hasOption("jest_performance_generate.json");
 
 let _buildTimeCaseStr = (actualTimeDataArray) =>
   Json.Encode.(

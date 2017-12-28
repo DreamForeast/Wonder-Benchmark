@@ -21,8 +21,7 @@ type result = {
 
 type config = {
   isClosePage: bool,
-  execCount: int,
-  isGenerateDataFile: bool
+  execCount: int
 };
 
 type state = {
