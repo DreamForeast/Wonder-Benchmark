@@ -1,9 +1,9 @@
 {
   "name": "wonder-benchmark",
-  "version": "0.1.23",
-  "authors": "DreamForest",
+  "version": "0.1.24",
+  "authors": "Wonder",
   "description": "wonder benchmark library",
-  "homepage": "https://github.com/DreamForeast/Wonder-Benchmark",
+  "homepage": "https://github.com/Wonder-Technology/Wonder-Benchmark",
   "license": "MIT",
   "main": "",
   "scripts": {
