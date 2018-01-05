@@ -53,16 +53,6 @@ let getDataFilePath = (testName, {benchmarkPath}) =>
             },
         |j}
  }; */
-let _writeFile = (filePath: string, fileContent: string) => {
-  let dirname = filePath |> Path.dirname;
-  dirname |> Fs.existsSync ?
-    Fs.writeFileAsUtf8Sync(filePath, fileContent) :
-    {
-      NodeExtend.mkdirSync(dirname);
-      Fs.writeFileAsUtf8Sync(filePath, fileContent)
-    }
-};
-
 let generate = (browser, {commonData} as performanceTestData) => {
   let {benchmarkPath} = commonData;
   Measure.measure(browser, performanceTestData)
@@ -72,7 +62,7 @@ let generate = (browser, {commonData} as performanceTestData) => {
          |> List.iter(
               ((testName, resultCaseList)) =>
                 BenchmarkDataConverter.convertToJsonStr(testName, resultCaseList)
-                |> _writeFile(
+                |> NodeExtend.writeFile(
                      _buildDataFilePath(
                        benchmarkPath,
                        BenchmarkDataConverter.buildDataFileName(testName)

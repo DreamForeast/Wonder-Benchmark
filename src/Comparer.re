@@ -133,7 +133,7 @@ let compare = (browser, {commonData, testDataList} as performanceTestData) =>
                             |> _compareMemory(actualMemory, benchmarkMemory, actualErrorRate)
                           ) {
                           | failMessage when _isFail(failMessage) => [
-                              (_buildCaseTitle(actualTestName, actualCaseName) ++ failMessage, actualCase),
+                              (_buildCaseTitle(actualTestName, actualCaseName) ++ failMessage, (actualTestName ,actualCase )),
                               ...failList
                             ]
                           | _ => failList

@@ -58,3 +58,14 @@ var fs = require('fs');
 
     |}
 ];
+
+/* todo refactor render test */
+let writeFile = (filePath: string, fileContent: string) => {
+  let dirname = filePath |> Path.dirname;
+  dirname |> Fs.existsSync ?
+    Fs.writeFileAsUtf8Sync(filePath, fileContent) :
+    {
+      mkdirSync(dirname);
+      Fs.writeFileAsUtf8Sync(filePath, fileContent)
+    }
+};
