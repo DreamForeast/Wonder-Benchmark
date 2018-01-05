@@ -6,6 +6,9 @@ let generateBenchmark = (performanceTestData) =>
   PuppeteerUtils.launchHeadlessBrowser()
   |> then_((browser) => GenerateBenchmark.generate(browser, performanceTestData));
 
+let generateReport = (debugFilePath, failList, performanceTestData) =>
+  GenerateDebug.generateHtmlFiles(Node.Path.dirname(debugFilePath), performanceTestData, failList);
+
 let _buildPerformanceTestDataFromFailList = (commonData, failList) => {
   let (_, (firstTestName, firstCase)) = List.hd(failList);
   {
