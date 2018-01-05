@@ -22,10 +22,7 @@ let _buildDebugHtmlFilePath = (targetAbsoluteFileDir, testName, caseName) =>
   Path.join([|targetAbsoluteFileDir, _buildDebugHtmlFileName(testName, caseName)|]);
 
 let _generateCssFile = (filePath) =>
-  {|img.correct-img, img.current-img, img.diff-img{
-  width:33%;
-  height:33%;
-};|}
+  {||}
   |> NodeExtend.writeFile(filePath);
 
 /* todo refactor render test: comparer not return test data! */
