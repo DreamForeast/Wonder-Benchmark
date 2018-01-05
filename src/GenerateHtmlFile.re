@@ -3,9 +3,8 @@ open PerformanceTestDataType;
 open Node;
 
 /* todo refactor with render test */
-let getRelativeFilePath = (fromAbsoluteFilePath, toAbsoluteFilePath) => {
-  let relativePath =
-    Path.relative(~from=Path.dirname(fromAbsoluteFilePath), ~to_=toAbsoluteFilePath, ());
+let getRelativeFilePath = (targetAbsoluteFileDir, toAbsoluteFilePath) => {
+  let relativePath = Path.relative(~from=targetAbsoluteFileDir, ~to_=toAbsoluteFilePath, ());
   if (! Js.String.startsWith("./", relativePath) && ! Js.String.startsWith("../", relativePath)) {
     "./" ++ relativePath
   } else {
@@ -19,9 +18,9 @@ let _getAllScriptFilePathList = (commonScriptFilePathList, scriptFilePathList) :
   | Some(scriptFilePathList) => commonScriptFilePathList @ scriptFilePathList
   };
 
-let buildImportScriptStr = (targetAbsoluteFilePath, commonScriptFilePathList, scriptFilePathList) =>
+let buildImportScriptStr = (targetAbsoluteFileDir, commonScriptFilePathList, scriptFilePathList) =>
   _getAllScriptFilePathList(commonScriptFilePathList, scriptFilePathList)
-  |> List.map((scriptFilePath) => getRelativeFilePath(targetAbsoluteFilePath, scriptFilePath))
+  |> List.map((scriptFilePath) => getRelativeFilePath(targetAbsoluteFileDir, scriptFilePath))
   |> List.fold_left(
        (resultStr, scriptFilePath) => resultStr ++ {j|<script src="$scriptFilePath"></script>
 |j},
@@ -36,8 +35,8 @@ let buildHeadStr = (title) => {j|<!DOCTYPE html>
      <link rel="stylesheet" href="./report.css"/>
    </head>|j};
 
-let buildDebugCssFilePath = (targetAbsoluteReportFilePath) =>
-  Path.join([|Path.dirname(targetAbsoluteReportFilePath), "report.css"|]);
+let buildDebugCssFilePath = (targetAbsoluteFileDir) =>
+  Path.join([|targetAbsoluteFileDir, "report.css"|]);
 
 let buildFootStr = () => {|</body>
         </html>|};

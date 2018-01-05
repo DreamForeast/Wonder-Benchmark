@@ -10,7 +10,7 @@ let _ =
       open Js.Promise;
       open Node;
       open PerformanceTestDataType;
-      beforeEach(
+      afterEach(
         () =>
           NodeExtend.rmdirFilesSync(Path.join([|Process.cwd(), "./test/performance/benchmark"|]))
       );

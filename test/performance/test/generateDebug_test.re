@@ -11,6 +11,7 @@ let _ =
       open Node;
       open PerformanceTestDataType;
       open PerformanceTestData;
+      afterEach(() => NodeExtend.rmdirFilesSync(Path.join([|Process.cwd(), "./test/debug"|])));
       beforeAllPromise(
         () =>
           PuppeteerUtils.launchHeadlessBrowser()
@@ -19,34 +20,76 @@ let _ =
       testPromise(
         "generate debug html files",
         () => {
-          let reportFilePath = Path.join([|Process.cwd(), "./test/report/report.html"|]);
+          let debugFileDir = Path.join([|Process.cwd(), "./test/debug/"|]);
           PuppeteerUtils.launchHeadlessBrowser()
           |> then_(
                (browser) =>
                  Comparer.compare(browser, wrongPerformanceTestData)
                  |> then_(
                       (failList) => {
-                        GenerateDebug.generateHtmlFiles(reportFilePath, wrongPerformanceTestData, failList);
+                        GenerateDebug.generateHtmlFiles(
+                          debugFileDir,
+                          wrongPerformanceTestData,
+                          failList
+                        );
                         (
                           Fs.existsSync(
                             Path.join([|
                               Process.cwd(),
-                              "./test/report/basic1_pf_test1_debug.html"
+                              "./test/debug/basic1_pf_test1_debug.html"
                             |])
                           ),
                           Fs.existsSync(
                             Path.join([|
                               Process.cwd(),
-                              "./test/report/basic1_pf_test2_debug.html"
+                              "./test/debug/basic1_pf_test2_debug.html"
                             |])
                           )
                         )
-                        |> expect == (false, true)
+                        |> expect == (true, false)
                         |> resolve
                       }
                     )
              )
         }
+      );
+      describe(
+        "replace body script",
+        () =>
+          testPromise(
+            "use wd.startDirector instead of wd.initDirector, wd.loopBody",
+            () => {
+              let debugFileDir = Path.join([|Process.cwd(), "./test/debug/"|]);
+              PuppeteerUtils.launchHeadlessBrowser()
+              |> then_(
+                   (browser) =>
+                     Comparer.compare(browser, wrongPerformanceTestData)
+                     |> then_(
+                          (failList) => {
+                            GenerateDebug.generateHtmlFiles(
+                              debugFileDir,
+                              wrongPerformanceTestData,
+                              failList
+                            );
+                            let debugFileContent =
+                              Fs.readFileAsUtf8Sync(
+                                Path.join([|
+                                  Process.cwd(),
+                                  "./test/debug/basic1_pf_test1_debug.html"
+                                |])
+                              );
+                            (
+                              debugFileContent |> Js.String.includes("wd.startDirector(state);"),
+                              debugFileContent |> Js.String.includes("wd.initDirector(state);"),
+                              debugFileContent |> Js.String.includes("wd.loopBody")
+                            )
+                            |> expect == (true, false, false)
+                            |> resolve
+                          }
+                        )
+                 )
+            }
+          )
       )
     }
   );

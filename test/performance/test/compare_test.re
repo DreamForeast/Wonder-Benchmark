@@ -11,6 +11,10 @@ let _ =
       open Node;
       open PerformanceTestDataType;
       open PerformanceTestData;
+      afterEach(
+        () =>
+          NodeExtend.rmdirFilesSync(Path.join([|Process.cwd(), "./test/performance/benchmark"|]))
+      );
       beforeAllPromise(
         () =>
           PuppeteerUtils.launchHeadlessBrowser()
@@ -26,17 +30,17 @@ let _ =
                  |> then_(
                       (failList) => {
                         let failText = Comparer.getFailText(failList);
-                        /* WonderCommonlib.DebugUtils.log(failText) |> ignore; */
+                        WonderCommonlib.DebugUtils.log(failText) |> ignore;
                         (
                           Comparer.isPass(failList),
                           failText |> Js.String.includes("pf_test1"),
                           failText |> Js.String.includes("pf_test2"),
                           failText |> Js.String.includes("expect time:prepare"),
-                          failText |> Js.String.includes("expect time:init"),
+                          /* failText |> Js.String.includes("expect time:init"), */
                           failText |> Js.String.includes("expect time:loopBody"),
                           failText |> Js.String.includes("expect memory")
                         )
-                        |> expect == (false, false, true, true, true, true, true)
+                        |> expect == (false, true, false, true, true, true)
                         |> resolve
                       }
                     )
