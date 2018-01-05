@@ -81,7 +81,6 @@ let getFailText = (failList) =>
   failList |> List.fold_left((text, (failMessage, _)) => text ++ failMessage, "");
 
 let _buildCaseTitle = (testName, caseName) => {j|$testName->$caseName\n|j};
-
 let compare = (browser, {commonData, testDataList} as performanceTestData) =>
   Measure.measure(browser, performanceTestData)
   |> then_(
@@ -115,36 +114,52 @@ let compare = (browser, {commonData, testDataList} as performanceTestData) =>
                         benchmarkTimeList,
                         benchmarkMemory
                       )
-                    ) =>
-                      actualCaseName !== benchmarkCaseName
-                      || actualErrorRate !== benchmarkErrorRate ?
+                    ) => {
+                      actualCaseName !== benchmarkCaseName ?
                         ExceptionHandleSystem.throwMessage(
-                          {j|actual caseName:$actualCaseName and errorRate:$actualErrorRate should === benchmark caseName:$benchmarkCaseName and errorRate:$benchmarkErrorRate|j}
+                          {j|actual caseName:$actualCaseName should === benchmark caseName:$benchmarkCaseName|j}
                         ) :
-                        (
-                          switch (
-                            ""
-                            |> _compareTime(
-                                 actualTimeList,
-                                 actualTimeTextList,
-                                 benchmarkTimeList,
-                                 actualErrorRate
-                               )
-                            |> _compareMemory(actualMemory, benchmarkMemory, actualErrorRate)
-                          ) {
-                          | failMessage when _isFail(failMessage) => [
-                              (
-                                _buildCaseTitle(actualTestName, actualCaseName) ++ failMessage,
-                                (actualTestName, actualCase)
-                              ),
-                              ...failList
-                            ]
-                          | _ => failList
-                          }
-                        ),
+                        actualErrorRate !== benchmarkErrorRate ?
+                          ExceptionHandleSystem.throwMessage(
+                            {j|actual errorRate:$actualErrorRate should === benchmark errorRate:$benchmarkErrorRate|j}
+                          ) :
+                          (
+                            switch (
+                              ""
+                              |> _compareTime(
+                                   actualTimeList,
+                                   actualTimeTextList,
+                                   benchmarkTimeList,
+                                   actualErrorRate
+                                 )
+                              |> _compareMemory(actualMemory, benchmarkMemory, actualErrorRate)
+                            ) {
+                            | failMessage when _isFail(failMessage) => [
+                                (
+                                  _buildCaseTitle(
+                                    actualTestName,
+                                    actualCaseName
+                                  )
+                                  ++ failMessage,
+                                  (actualTestName, actualCase)
+                                ),
+                                ...failList
+                              ]
+                            | _ => failList
+                            }
+                          )
+                    },
                     [],
                     actualResultCaseList,
                     benchmarkResultCaseList
+                    |> List.filter(
+                         ((benchmarkCaseName, _, _, _, _, _)) =>
+                           actualResultCaseList
+                           |> List.exists(
+                                ((actualCaseName, _, _, _, _, _, _)) =>
+                                  actualCaseName === benchmarkCaseName
+                              )
+                       )
                   )
                 },
               []
