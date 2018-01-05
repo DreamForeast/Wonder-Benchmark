@@ -54,8 +54,8 @@ let getDataFilePath = (testName, {benchmarkPath}) =>
         |j}
  }; */
 let generate = (browser, {commonData} as performanceTestData) => {
-  let {benchmarkPath} = commonData;
-  Measure.measure(browser, performanceTestData)
+  let {benchmarkPath, execCountWhenGenerateBenchmark} = commonData;
+  Measure.measure(browser, execCountWhenGenerateBenchmark, performanceTestData)
   |> then_(
        (resultList) => {
          resultList

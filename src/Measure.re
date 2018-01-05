@@ -244,8 +244,8 @@ let _exec =
          |> then_((data) => [data, ...resultList] |> resolve)
      );
 
-let measure = (browser, {commonData, testDataList}) => {
-  let {isClosePage, execCountWhenTest, scriptFilePathList: commonScriptFilePathList} = commonData;
+let measure = (browser, execCount, {commonData, testDataList}) => {
+  let {isClosePage, scriptFilePathList: commonScriptFilePathList} = commonData;
   testDataList
   |> List.fold_left(
        (promise, {name: testName, caseList}) =>
@@ -269,7 +269,7 @@ let measure = (browser, {commonData, testDataList}) => {
                           )
                        |> _exec(
                             isClosePage,
-                            execCountWhenTest,
+                            execCount,
                             commonScriptFilePathList,
                             caseName,
                             scriptFilePathList,

@@ -81,7 +81,7 @@ let getFailText = (failList) =>
   failList |> List.fold_left((text, (failMessage, _)) => text ++ failMessage, "");
 
 let compare = (browser, {commonData, testDataList} as performanceTestData) =>
-  Measure.measure(browser, performanceTestData)
+  Measure.measure(browser, commonData.execCountWhenTest, performanceTestData)
   |> then_(
        (resultList: list((string, 'a))) =>
          resultList
