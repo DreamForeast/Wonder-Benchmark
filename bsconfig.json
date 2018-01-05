@@ -7,7 +7,25 @@
     },
     {
       "dir": "test",
-      "subdirs": true,
+      "subdirs": [
+        {
+          "dir": "performance",
+          "subdirs": [
+            {
+              "dir": "data",
+              "subdirs": true
+            },
+            {
+              "dir": "test",
+              "subdirs": true
+            }
+          ]
+        },
+        {
+          "dir": "res",
+          "subdirs": true
+        }
+      ],
       "type": "dev"
     }
   ],

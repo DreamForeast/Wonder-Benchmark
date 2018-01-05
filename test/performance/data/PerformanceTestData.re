@@ -3,8 +3,8 @@ open PerformanceTestDataType;
 let correctPerformanceTestData = {
   commonData: {
     isClosePage: true,
-    execCountWhenTest: 10,
-    execCountWhenGenerateBenchmark: 20,
+    execCountWhenTest: 5,
+    execCountWhenGenerateBenchmark: 10,
     benchmarkPath: "./test/performance/benchmark/",
     scriptFilePathList: ["./test/res/script1.js"]
   },
@@ -42,7 +42,7 @@ var n4 = performance.now();
 return {"textArray": ["prepare", "init", "loopBody"], "timeArray": [n1, n2, n3, n4] }
 |},
           scriptFilePathList: None,
-          errorRate: 5
+          errorRate: 50
         },
         {
           name: "pf_test2",
@@ -73,17 +73,18 @@ var n4 = performance.now();
 return {"textArray": ["prepare", "init", "loopBody"], "timeArray": [n1, n2, n3, n4] }
 |},
           scriptFilePathList: Some(["./test/res/script2.js"]),
-          errorRate: 5
+          errorRate: 50
         }
       ]
     }
   ]
 };
+
 let wrongPerformanceTestData = {
   commonData: {
     isClosePage: true,
-    execCountWhenTest: 10,
-    execCountWhenGenerateBenchmark: 20,
+    execCountWhenTest: 5,
+    execCountWhenGenerateBenchmark: 10,
     benchmarkPath: "./test/performance/benchmark/",
     scriptFilePathList: ["./test/res/script1.js"]
   },
@@ -121,13 +122,13 @@ var n4 = performance.now();
 return {"textArray": ["prepare", "init", "loopBody"], "timeArray": [n1, n2, n3, n4] }
 |},
           scriptFilePathList: None,
-          errorRate: 5
+          errorRate: 50
         },
         {
           name: "pf_test2",
           bodyFuncStr: {|function test(){
                         var arr = [];
-                        for(var i = 0; i <= 300000; i++){
+                        for(var i = 0; i <= 1000000; i++){
                         arr[i] = minus(3, wd.add(1, 2));
                         }
                     }
@@ -152,7 +153,7 @@ var n4 = performance.now();
 return {"textArray": ["prepare", "init", "loopBody"], "timeArray": [n1, n2, n3, n4] }
 |},
           scriptFilePathList: Some(["./test/res/script2.js"]),
-          errorRate: 5
+          errorRate: 50
         }
       ]
     }

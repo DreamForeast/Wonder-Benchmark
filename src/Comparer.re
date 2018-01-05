@@ -75,6 +75,13 @@ let _getBenchmarkData = (testName, commonData) =>
 
 let _isFail = (failMessage) => failMessage |> Js.String.length > 0;
 
+let isPass = (failList) => failList |> List.length === 0;
+
+let getFailText = (failList) =>
+  failList |> List.fold_left((text, (failMessage, _)) => text ++ failMessage, "");
+
+let _buildCaseTitle = (testName, caseName) => {j|$testName->$caseName\n|j};
+
 let compare = (browser, {commonData, testDataList} as performanceTestData) =>
   Measure.measure(browser, performanceTestData)
   |> then_(
@@ -126,7 +133,7 @@ let compare = (browser, {commonData, testDataList} as performanceTestData) =>
                             |> _compareMemory(actualMemory, benchmarkMemory, actualErrorRate)
                           ) {
                           | failMessage when _isFail(failMessage) => [
-                              (failMessage, actualCase),
+                              (_buildCaseTitle(actualTestName, actualCaseName) ++ failMessage, actualCase),
                               ...failList
                             ]
                           | _ => failList

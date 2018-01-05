@@ -1,3 +1,5 @@
+open Node;
+
 let _buildTimeCaseStr = (timeTextList, timeList) =>
   Json.Encode.(
     List.fold_left2(
@@ -9,6 +11,7 @@ let _buildTimeCaseStr = (timeTextList, timeList) =>
       timeTextList,
       timeList
     )
+    |> List.rev
     |> Array.of_list
     |> Js.Array.joinWith(",")
   );
@@ -47,7 +50,7 @@ let convertToJsonStr = (testName, resultCaseList) => {
 /* (caseName, errorRate, timestamp, timeTextList, timeList, memory) */
 let convertToData = (json) =>
   Json.Decode.(
-    json |> field("name", string),
+    Path.basename_ext(json |> field("name", string), ".json"),
     json
     |> field(
          "cases",
@@ -60,13 +63,13 @@ let convertToData = (json) =>
                   json |> field("timestamp", int),
                   json
                   |> field(
-                       "time",
+                       "time_detail",
                        (json) =>
                          json |> array((json) => json |> field("name", string)) |> Array.to_list
                      ),
                   json
                   |> field(
-                       "time",
+                       "time_detail",
                        (json) =>
                          json |> array((json) => json |> field("time", int)) |> Array.to_list
                      ),
