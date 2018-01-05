@@ -67,6 +67,7 @@ let runTest = (browserArr, performanceTestData) =>
          |> then_(
               (failList) =>
                 Comparer.isPass(failList) ?
-                  failList |> resolve : Comparer.getFailText(failList) |> Obj.magic |> reject
+                  failList |> resolve :
+                  (Comparer.getFailText(failList), failList) |> Obj.magic |> reject
             )
      );

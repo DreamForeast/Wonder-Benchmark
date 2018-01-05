@@ -72,10 +72,9 @@ let _ =
                               (failList) => fail("should be fail, but actual is pass") |> resolve
                             )
                          |> catch(
-                              (failText) => {
-                                let failText = failText |> Obj.magic;
+                              (err) => {
+                                let (failText, failList) = err |> Obj.magic;
                                 /* WonderCommonlib.DebugUtils.log(failText) |> ignore; */
-
                                 (
                                   /* Comparer.isPass(failList), */
                                   failText |> Js.String.includes("pf_test1"),
