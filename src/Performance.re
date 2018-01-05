@@ -1,4 +1,4 @@
-[@bs.val] external root : Js.t({..}) = "window";
+/* [@bs.val] external root : Js.t({..}) = "window";
 
 [@bs.val] external chrome : Js.t({..}) = "";
 
@@ -21,4 +21,4 @@ function(window){
         }
 }
   |}
-];
+]; */

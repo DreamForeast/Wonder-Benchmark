@@ -158,13 +158,18 @@ type metricsData = {
 };
 
 /* type evaluateFuncReturnValue; */
-
 [@bs.send.pipe : t] external addScriptTag : scriptTagOptions => Js.Promise.t(ElementHandle.t) = "";
 
 /* [@bs.send.pipe : t]
    external evaluate : (unit => Js.Promise.t(evaluteResult)) => Js.Promise.t(serializableT) =
      ""; */
-[@bs.send.pipe : t] external evaluate : (unit => 
-'evaluateFuncReturnValue) => Js.Promise.t('evaluateFuncReturnValue) = "";
+[@bs.send.pipe : t]
+external evaluate : (unit => 'evaluateFuncReturnValue) => Js.Promise.t('evaluateFuncReturnValue) =
+  "";
+
+[@bs.send.pipe : t]
+external evaluateWithArg :
+  (string => 'evaluateFuncReturnValue, string) => Js.Promise.t('evaluateFuncReturnValue) =
+  "evaluate";
 
 [@bs.send.pipe : t] external metrics : unit => Js.Promise.t(metricsData) = "";

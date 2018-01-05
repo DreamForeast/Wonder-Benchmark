@@ -1,4 +1,4 @@
-type caseTimeItem = {
+/* type caseTimeItem = {
   name: string,
   time: int
 };
@@ -33,13 +33,14 @@ type state = {
   name: string,
   caseList: list(caseItem),
   result: option(result)
-};
+}; */
 
 type resultTimeData = {
+  name:string,
   errorRate: int,
   timestamp: int,
   timeArray: array(int),
   timeTextArray: array(string)
 };
 
-type funcReturnValue = {. "errorRate": int, "textArray": array(string), "timeArray": array(float)};
+/* type funcReturnValue = {. "errorRate": int, "textArray": array(string), "timeArray": array(float)}; */
