@@ -259,6 +259,14 @@ let measure = (browser, {commonData, testDataList}) => {
                        {name: caseName, bodyFuncStr, scriptFilePathList, errorRate} as case
                      ) =>
                        promise
+                       |> then_(
+                            (resultList) => {
+                              let title =
+                                PerformanceTestDataUtils.buildCaseTitle(testName, caseName);
+                              WonderCommonlib.DebugUtils.log({j|measure $(title)...|j}) |> ignore;
+                              resultList |> resolve
+                            }
+                          )
                        |> _exec(
                             isClosePage,
                             execCountWhenTest,

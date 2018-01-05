@@ -80,7 +80,6 @@ let isPass = (failList) => failList |> List.length === 0;
 let getFailText = (failList) =>
   failList |> List.fold_left((text, (failMessage, _)) => text ++ failMessage, "");
 
-let _buildCaseTitle = (testName, caseName) => {j|$testName->$caseName\n|j};
 let compare = (browser, {commonData, testDataList} as performanceTestData) =>
   Measure.measure(browser, performanceTestData)
   |> then_(
@@ -114,7 +113,7 @@ let compare = (browser, {commonData, testDataList} as performanceTestData) =>
                         benchmarkTimeList,
                         benchmarkMemory
                       )
-                    ) => {
+                    ) =>
                       actualCaseName !== benchmarkCaseName ?
                         ExceptionHandleSystem.throwMessage(
                           {j|actual caseName:$actualCaseName should === benchmark caseName:$benchmarkCaseName|j}
@@ -136,7 +135,7 @@ let compare = (browser, {commonData, testDataList} as performanceTestData) =>
                             ) {
                             | failMessage when _isFail(failMessage) => [
                                 (
-                                  _buildCaseTitle(
+                                  PerformanceTestDataUtils.buildCaseTitle(
                                     actualTestName,
                                     actualCaseName
                                   )
@@ -147,8 +146,7 @@ let compare = (browser, {commonData, testDataList} as performanceTestData) =>
                               ]
                             | _ => failList
                             }
-                          )
-                    },
+                          ),
                     [],
                     actualResultCaseList,
                     benchmarkResultCaseList

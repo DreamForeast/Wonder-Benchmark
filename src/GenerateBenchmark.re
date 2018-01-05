@@ -57,18 +57,21 @@ let generate = (browser, {commonData} as performanceTestData) => {
   let {benchmarkPath} = commonData;
   Measure.measure(browser, performanceTestData)
   |> then_(
-       (resultList) =>
+       (resultList) => {
          resultList
          |> List.iter(
-              ((testName, resultCaseList)) =>
+              ((testName, resultCaseList)) => {
+                let filePath =
+                  _buildDataFilePath(
+                    benchmarkPath,
+                    BenchmarkDataConverter.buildDataFileName(testName)
+                  );
+                WonderCommonlib.DebugUtils.log({j|generate benchmark:$filePath...|j}) |> ignore;
                 BenchmarkDataConverter.convertToJsonStr(testName, resultCaseList)
-                |> NodeExtend.writeFile(
-                     _buildDataFilePath(
-                       benchmarkPath,
-                       BenchmarkDataConverter.buildDataFileName(testName)
-                     )
-                   )
-            )
-         |> resolve
+                |> NodeExtend.writeFile(filePath)
+              }
+            );
+         browser |> resolve
+       }
      )
 };

@@ -32,6 +32,7 @@ let _compareSpecificCount = (browser, count, performanceTestData) => {
     switch count {
     | count when count === 0 => resultFailList |> resolve
     | _ =>
+      WonderCommonlib.DebugUtils.log("compare...") |> ignore;
       Comparer.compare(browser, performanceTestData)
       |> then_(
            (failList) =>
@@ -41,7 +42,6 @@ let _compareSpecificCount = (browser, count, performanceTestData) => {
                  browser,
                  count - 1,
                  _buildPerformanceTestDataFromFailList(commonData, failList),
-                 /* |> WonderCommonlib.DebugUtils.logJson, */
                  failList
                )
          )
