@@ -1,1 +1,1 @@
-let buildPerformanceTestDataFromFailList = TestPerformance._buildPerformanceTestDataFromFailList;
+let buildPerformanceTestDataFromFailList = Tester._buildPerformanceTestDataFromFailList;

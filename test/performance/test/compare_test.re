@@ -56,7 +56,7 @@ let _ =
           )
       );
       describe(
-        "TestPerformance",
+        "Tester",
         () =>
           describe(
             "runTest",
@@ -67,7 +67,7 @@ let _ =
                   PuppeteerUtils.launchHeadlessBrowser()
                   |> then_(
                        (browser) =>
-                         TestPerformance.runTest([|browser|], wrongPerformanceTestData)
+                         Tester.runTest([|browser|], wrongPerformanceTestData)
                          |> then_(
                               (failList) => fail("should be fail, but actual is pass") |> resolve
                             )
