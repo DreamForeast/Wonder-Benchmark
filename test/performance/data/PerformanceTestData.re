@@ -3,8 +3,11 @@ open PerformanceTestDataType;
 let correctPerformanceTestData = {
   commonData: {
     isClosePage: true,
-    execCountWhenTest: 5,
-    execCountWhenGenerateBenchmark: 10,
+    execCountWhenTest: 1,
+    execCountWhenGenerateBenchmark: 2,
+    compareCount: 3,
+    maxAllowDiffTimePercent: 500,
+    maxAllowDiffMemoryPercent: 500,
     benchmarkPath: "./test/performance/benchmark/",
     scriptFilePathList: []
   },
@@ -73,7 +76,7 @@ return {"textArray": ["prepare", "init", "loopBody"], "timeArray": [n1, n2, n3, 
           bodyFuncStr: {|function test(){
                         var arr = [];
                         for(var i = 0; i <= 100000; i++){
-                        arr[i] = minus(3, wd.add(1, 2));
+                        arr[i] = minus(1, wd.add(1, 2));
                         }
                     }
 var n1 = performance.now();
@@ -97,7 +100,7 @@ var n4 = performance.now();
 return {"textArray": ["prepare", "init", "loopBody"], "timeArray": [n1, n2, n3, n4] }
 |},
           scriptFilePathList: Some(["./test/res/script1.js", "./test/res/script2.js"]),
-          errorRate: 20
+          errorRate: 100
         }
       ]
     }
@@ -107,8 +110,11 @@ return {"textArray": ["prepare", "init", "loopBody"], "timeArray": [n1, n2, n3, 
 let wrongPerformanceTestData = {
   commonData: {
     isClosePage: true,
-    execCountWhenTest: 5,
-    execCountWhenGenerateBenchmark: 10,
+    execCountWhenTest: 1,
+    execCountWhenGenerateBenchmark: 2,
+    compareCount: 3,
+    maxAllowDiffTimePercent: 5000,
+    maxAllowDiffMemoryPercent: 5000,
     benchmarkPath: "./test/performance/benchmark/",
     scriptFilePathList: []
   },
@@ -177,7 +183,7 @@ return {"textArray": ["prepare", "init", "loopBody"], "timeArray": [n1, n2, n3, 
           bodyFuncStr: {|function test(){
                         var arr = [];
                         for(var i = 0; i <= 100000; i++){
-                        arr[i] = minus(3, wd.add(1, 2));
+                        arr[i] = minus(1, wd.add(1, 2));
                         }
                     }
 var n1 = performance.now();
@@ -201,7 +207,7 @@ var n4 = performance.now();
 return {"textArray": ["prepare", "init", "loopBody"], "timeArray": [n1, n2, n3, n4] }
 |},
           scriptFilePathList: Some(["./test/res/script1.js", "./test/res/script2.js"]),
-          errorRate: 20
+          errorRate: 100
         }
       ]
     }

@@ -1,1 +1,0 @@
-let buildPerformanceTestDataFromFailList = Tester._buildPerformanceTestDataFromFailList;

@@ -28,7 +28,7 @@ let _buildDebugHtmlFilePath = (targetAbsoluteFileDir, testName, caseName) =>
 let generateHtmlFiles = (targetAbsoluteFileDir: string, performanceTestData, compareResultList) => {
   compareResultList
   |> List.iter(
-       ((_, (testName, {name, bodyFuncStr, scriptFilePathList}))) => {
+       ((_, (testName, {name, bodyFuncStr, scriptFilePathList}, _, _))) => {
          let htmlStr =
            GenerateHtmlFile.buildHeadStr(_buildDebugHtmlFileName(testName, name))
            ++ "\n<body>\n"

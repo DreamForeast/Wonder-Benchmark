@@ -10,6 +10,9 @@ let _ =
       open Js.Promise;
       open PerformanceTestDataType;
       open PerformanceTestData;
+      let sandbox = getSandboxDefaultVal();
+      beforeEach(() => sandbox := createSandbox());
+      afterEach(() => restoreSandbox(refJsObjToSandbox(sandbox^)));
       afterAll(
         () =>
           WonderCommonlib.NodeExtend.rmdirFilesSync(
@@ -33,7 +36,7 @@ let _ =
                   WonderBsPuppeteer.PuppeteerUtils.launchHeadlessBrowser()
                   |> then_(
                        (browser) =>
-                         Comparer.compare(browser, wrongPerformanceTestData)
+                         [@bs] Comparer.compare(browser, wrongPerformanceTestData)
                          |> then_(
                               (failList) => {
                                 let failText = Comparer.getFailText(failList);
@@ -61,35 +64,167 @@ let _ =
           describe(
             "runTest",
             () => {
-              testPromise(
+              let _buildFailCase =
+                  (
+                    ~name,
+                    ~bodyFuncStr="",
+                    ~scriptFilePathList=Some(["./script"]),
+                    ~errorRate=5,
+                    ()
+                  ) => {
+                name,
+                bodyFuncStr,
+                scriptFilePathList,
+                errorRate
+              };
+              let _buildFailList =
+                  (testTitle, testName, case, diffTimePercentList, diffMemory, failList) =>
+                failList @ [(testTitle, (testName, case, diffTimePercentList, diffMemory))];
+              describe(
                 "compare at most 3 times",
-                () =>
-                  WonderBsPuppeteer.PuppeteerUtils.launchHeadlessBrowser()
-                  |> then_(
-                       (browser) =>
-                         Tester.runTest([|browser|], wrongPerformanceTestData)
-                         |> then_(
-                              (failList) => fail("should be fail, but actual is pass") |> resolve
-                            )
-                         |> catch(
-                              (err) => {
-                                let (failText, failList) = err |> Obj.magic;
-                                /* WonderCommonlib.DebugUtils.log(failText) |> ignore; */
-                                (
-                                  /* Comparer.isPass(failList), */
-                                  failText |> Js.String.includes("pf_test1"),
-                                  failText |> Js.String.includes("pf_test2"),
-                                  failText |> Js.String.includes("expect time:prepare"),
-                                  failText |> Js.String.includes("expect time:loopBody"),
-                                  failText |> Js.String.includes("expect memory")
+                () => {
+                  testPromise(
+                    "test",
+                    () =>
+                      WonderBsPuppeteer.PuppeteerUtils.launchHeadlessBrowser()
+                      |> then_(
+                           (browser) =>
+                             Tester.runTest([|browser|], wrongPerformanceTestData)
+                             |> then_(
+                                  (failList) =>
+                                    fail("should be fail, but actual is pass") |> resolve
                                 )
-                                |> expect == (true, false, true, true, true)
-                                /* |> expect == (true, false) */
-                                |> resolve
-                                |> Obj.magic
-                              }
-                            )
-                     )
+                             |> catch(
+                                  (err) => {
+                                    let (failText, failList) = err |> Obj.magic;
+                                    (
+                                      /* Comparer.isPass(failList), */
+                                      failText |> Js.String.includes("pf_test1"),
+                                      failText |> Js.String.includes("pf_test2"),
+                                      failText |> Js.String.includes("expect time:prepare"),
+                                      failText |> Js.String.includes("expect time:loopBody"),
+                                      failText |> Js.String.includes("expect memory")
+                                    )
+                                    |> expect == (true, false, true, true, true)
+                                    /* |> expect == (true, false) */
+                                    |> resolve
+                                    |> Obj.magic
+                                  }
+                                )
+                         )
+                  );
+                  describe(
+                    "if compare diff percent exceed max allow diff percent, not re-compare it and regard it as fail case",
+                    () => {
+                      let _testCompareOnce = (prepareFunc) => {
+                        let (_, _, failList) = prepareFunc();
+                        let _fakeCompare = createEmptyStubWithJsObjSandbox(sandbox);
+                        _fakeCompare
+                        |> onCall(0)
+                        |> returns(make((~resolve, ~reject) => [@bs] resolve(failList)));
+                        TesterTool.compareSpecificCount(
+                          Obj.magic(1),
+                          1,
+                          _fakeCompare,
+                          wrongPerformanceTestData
+                        )
+                        |> then_(
+                             (resultFailList) => resultFailList |> expect == failList |> resolve
+                           )
+                      };
+                      let _testCompareTwice = (prepareFunc) => {
+                        let (failCase1, failCase2, failList) = prepareFunc();
+                        let _fakeCompare = createEmptyStubWithJsObjSandbox(sandbox);
+                        _fakeCompare
+                        |> onCall(0)
+                        |> returns(make((~resolve, ~reject) => [@bs] resolve(failList)));
+                        _fakeCompare
+                        |> onCall(1)
+                        |> returns(
+                             make((~resolve, ~reject) => [@bs] resolve([List.nth(failList, 1)]))
+                           );
+                        TesterTool.compareSpecificCount(
+                          Obj.magic(1),
+                          2,
+                          _fakeCompare,
+                          wrongPerformanceTestData
+                        )
+                        |> then_(
+                             (resultFailList) =>
+                               (
+                                 resultFailList,
+                                 (
+                                   List.nth(_fakeCompare |> getCall(1) |> getArgs, 1).testDataList
+                                   |> List.hd
+                                 ).
+                                   name
+                               )
+                               |> expect == (failList, "test2")
+                               |> resolve
+                           )
+                      };
+                      describe(
+                        "test diff time exceed",
+                        () => {
+                          let _prepare = () => {
+                            let failCase1 = _buildFailCase(~name="case1", ());
+                            let failCase2 = _buildFailCase(~name="case2", ());
+                            let failList =
+                              []
+                              |> _buildFailList(
+                                   "test1_title1",
+                                   "test1",
+                                   failCase1,
+                                   [wrongPerformanceTestData.commonData.maxAllowDiffTimePercent],
+                                   1
+                                 )
+                              |> _buildFailList(
+                                   "test2_title1",
+                                   "test2",
+                                   failCase2,
+                                   [
+                                     wrongPerformanceTestData.commonData.maxAllowDiffTimePercent - 1
+                                   ],
+                                   1
+                                 );
+                            (failCase1, failCase2, failList)
+                          };
+                          testPromise("test run once", () => _testCompareOnce(_prepare));
+                          testPromise("test run twice", () => _testCompareTwice(_prepare))
+                        }
+                      );
+                      describe(
+                        "test diff memory exceed",
+                        () => {
+                          let _prepare = () => {
+                            let failCase1 = _buildFailCase(~name="case1", ());
+                            let failCase2 = _buildFailCase(~name="case2", ());
+                            let failList =
+                              []
+                              |> _buildFailList(
+                                   "test1_title1",
+                                   "test1",
+                                   failCase1,
+                                   [1],
+                                   wrongPerformanceTestData.commonData.maxAllowDiffMemoryPercent
+                                 )
+                              |> _buildFailList(
+                                   "test2_title1",
+                                   "test2",
+                                   failCase2,
+                                   [1],
+                                   wrongPerformanceTestData.commonData.maxAllowDiffMemoryPercent
+                                   - 1
+                                 );
+                            (failCase1, failCase2, failList)
+                          };
+                          testPromise("test run once", () => _testCompareOnce(_prepare));
+                          testPromise("test run twice", () => _testCompareTwice(_prepare))
+                        }
+                      )
+                    }
+                  )
+                }
               );
               describe(
                 "test build performanceTestData from failList",
@@ -97,15 +232,11 @@ let _ =
                   test(
                     "test one fail case",
                     () => {
-                      let failCase = {
-                        name: "case1",
-                        bodyFuncStr: "",
-                        scriptFilePathList: Some(["./script1"]),
-                        errorRate: 5
-                      };
-                      let failList = [("test1_title", ("test1", failCase))];
+                      let failCase1 = _buildFailCase(~name="case1", ());
+                      let failList =
+                        [] |> _buildFailList("test1_title1", "test1", failCase1, [1], 1);
                       let data =
-                        TestPerformanceTool.buildPerformanceTestDataFromFailList(
+                        TesterTool.buildPerformanceTestDataFromFailList(
                           wrongPerformanceTestData.commonData,
                           failList
                         );
@@ -113,31 +244,21 @@ let _ =
                       |>
                       expect == {
                                   commonData: wrongPerformanceTestData.commonData,
-                                  testDataList: [{name: "test1", caseList: [failCase]}]
+                                  testDataList: [{name: "test1", caseList: [failCase1]}]
                                 }
                     }
                   );
                   test(
                     "test two fail case of the same test",
                     () => {
-                      let failCase1 = {
-                        name: "case1",
-                        bodyFuncStr: "",
-                        scriptFilePathList: Some(["./script1"]),
-                        errorRate: 5
-                      };
-                      let failCase2 = {
-                        name: "case2",
-                        bodyFuncStr: "",
-                        scriptFilePathList: Some(["./script2"]),
-                        errorRate: 6
-                      };
-                      let failList = [
-                        ("test1_title1", ("test1", failCase1)),
-                        ("test1_title2", ("test1", failCase2))
-                      ];
+                      let failCase1 = _buildFailCase(~name="case1", ());
+                      let failCase2 = _buildFailCase(~name="case2", ());
+                      let failList =
+                        []
+                        |> _buildFailList("test1_title1", "test1", failCase1, [1], 1)
+                        |> _buildFailList("test1_title2", "test1", failCase2, [1], 1);
                       let data =
-                        TestPerformanceTool.buildPerformanceTestDataFromFailList(
+                        TesterTool.buildPerformanceTestDataFromFailList(
                           wrongPerformanceTestData.commonData,
                           failList
                         );
@@ -152,38 +273,18 @@ let _ =
                   test(
                     "test fail cases of the different test",
                     () => {
-                      let failCase1 = {
-                        name: "case1",
-                        bodyFuncStr: "",
-                        scriptFilePathList: Some(["./script1"]),
-                        errorRate: 5
-                      };
-                      let failCase2 = {
-                        name: "case2",
-                        bodyFuncStr: "",
-                        scriptFilePathList: Some(["./script2"]),
-                        errorRate: 6
-                      };
-                      let failCase3 = {
-                        name: "case3",
-                        bodyFuncStr: "",
-                        scriptFilePathList: Some(["./script3"]),
-                        errorRate: 7
-                      };
-                      let failCase4 = {
-                        name: "case4",
-                        bodyFuncStr: "",
-                        scriptFilePathList: Some(["./script4"]),
-                        errorRate: 8
-                      };
-                      let failList = [
-                        ("test1_title1", ("test1", failCase1)),
-                        ("test2_title1", ("test2", failCase2)),
-                        ("test2_title2", ("test2", failCase3)),
-                        ("test3_title1", ("test3", failCase4))
-                      ];
+                      let failCase1 = _buildFailCase(~name="case1", ());
+                      let failCase2 = _buildFailCase(~name="case2", ());
+                      let failCase3 = _buildFailCase(~name="case3", ());
+                      let failCase4 = _buildFailCase(~name="case4", ());
+                      let failList =
+                        []
+                        |> _buildFailList("test1_title1", "test1", failCase1, [1], 1)
+                        |> _buildFailList("test2_title1", "test2", failCase2, [1], 1)
+                        |> _buildFailList("test2_title2", "test2", failCase3, [1], 1)
+                        |> _buildFailList("test3_title1", "test3", failCase4, [1], 1);
                       let data =
-                        TestPerformanceTool.buildPerformanceTestDataFromFailList(
+                        TesterTool.buildPerformanceTestDataFromFailList(
                           wrongPerformanceTestData.commonData,
                           failList
                         );

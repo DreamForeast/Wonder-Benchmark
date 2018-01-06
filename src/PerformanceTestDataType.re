@@ -9,6 +9,9 @@ type commonData = {
   isClosePage: bool,
   execCountWhenTest: int,
   execCountWhenGenerateBenchmark: int,
+  compareCount: int,
+  maxAllowDiffTimePercent: int,
+  maxAllowDiffMemoryPercent: int,
   benchmarkPath: string,
   scriptFilePathList: list(string)
 };

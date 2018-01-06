@@ -11,7 +11,10 @@ let _ =
       open Node;
       open PerformanceTestDataType;
       open PerformanceTestData;
-      afterAll(() => WonderCommonlib.NodeExtend.rmdirFilesSync(Path.join([|Process.cwd(), "./test/debug"|])));
+      afterAll(
+        () =>
+          WonderCommonlib.NodeExtend.rmdirFilesSync(Path.join([|Process.cwd(), "./test/debug"|]))
+      );
       beforeAllPromise(
         () =>
           WonderBsPuppeteer.PuppeteerUtils.launchHeadlessBrowser()
@@ -24,7 +27,7 @@ let _ =
           WonderBsPuppeteer.PuppeteerUtils.launchHeadlessBrowser()
           |> then_(
                (browser) =>
-                 Comparer.compare(browser, wrongPerformanceTestData)
+                 [@bs] Comparer.compare(browser, wrongPerformanceTestData)
                  |> then_(
                       (failList) => {
                         GenerateDebug.generateHtmlFiles(
@@ -34,16 +37,10 @@ let _ =
                         );
                         (
                           Fs.existsSync(
-                            Path.join([|
-                              Process.cwd(),
-                              "./test/debug/basic1_pf_test1_debug.html"
-                            |])
+                            Path.join([|Process.cwd(), "./test/debug/basic1_pf_test1_debug.html"|])
                           ),
                           Fs.existsSync(
-                            Path.join([|
-                              Process.cwd(),
-                              "./test/debug/basic1_pf_test2_debug.html"
-                            |])
+                            Path.join([|Process.cwd(), "./test/debug/basic1_pf_test2_debug.html"|])
                           )
                         )
                         |> expect == (true, false)
@@ -63,7 +60,7 @@ let _ =
               WonderBsPuppeteer.PuppeteerUtils.launchHeadlessBrowser()
               |> then_(
                    (browser) =>
-                     Comparer.compare(browser, wrongPerformanceTestData)
+                     [@bs]Comparer.compare(browser, wrongPerformanceTestData)
                      |> then_(
                           (failList) => {
                             GenerateDebug.generateHtmlFiles(
