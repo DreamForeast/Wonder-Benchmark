@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "bs-json": "^0.2.3",
-    "wonder-commonlib": "^0.2.15"
+    "wonder-commonlib": "^0.2.17"
   },
   "resolutions": {
     "wonder-bs-jest": "0.2.17"
