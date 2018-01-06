@@ -25,7 +25,6 @@ let _buildDebugHtmlFilePath = (targetAbsoluteFileDir, testName, caseName) =>
   {||}
   |> WonderCommonlib.NodeExtend.writeFile(filePath); */
 
-/* todo refactor render test: comparer not return test data! */
 let generateHtmlFiles = (targetAbsoluteFileDir: string, performanceTestData, compareResultList) => {
   compareResultList
   |> List.iter(
@@ -44,6 +43,5 @@ let generateHtmlFiles = (targetAbsoluteFileDir: string, performanceTestData, com
          |> WonderCommonlib.NodeExtend.writeFile(_buildDebugHtmlFilePath(targetAbsoluteFileDir, testName, name))
        }
      );
-  /* todo fix render test: generate css */
   /* _generateCssFile(GenerateHtmlFile.buildDebugCssFilePath(targetAbsoluteFileDir)) */
 };
