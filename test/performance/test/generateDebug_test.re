@@ -11,7 +11,7 @@ let _ =
       open Node;
       open PerformanceTestDataType;
       open PerformanceTestData;
-      afterAll(() => NodeExtend.rmdirFilesSync(Path.join([|Process.cwd(), "./test/debug"|])));
+      afterAll(() => WonderCommonlib.NodeExtend.rmdirFilesSync(Path.join([|Process.cwd(), "./test/debug"|])));
       beforeAllPromise(
         () =>
           PuppeteerUtils.launchHeadlessBrowser()

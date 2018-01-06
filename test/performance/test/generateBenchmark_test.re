@@ -12,7 +12,7 @@ let _ =
       open PerformanceTestDataType;
       afterAll(
         () =>
-          NodeExtend.rmdirFilesSync(Path.join([|Process.cwd(), "./test/performance/benchmark"|]))
+          WonderCommonlib.NodeExtend.rmdirFilesSync(Path.join([|Process.cwd(), "./test/performance/benchmark"|]))
       );
       testPromise(
         "test generate benchmark data to specific dir",

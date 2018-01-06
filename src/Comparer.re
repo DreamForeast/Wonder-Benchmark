@@ -1,6 +1,6 @@
 open Node;
 
-open NodeExtend;
+open WonderCommonlib.NodeExtend;
 
 open Performance;
 

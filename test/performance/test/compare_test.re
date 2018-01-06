@@ -12,7 +12,7 @@ let _ =
       open PerformanceTestData;
       afterAll(
         () =>
-          NodeExtend.rmdirFilesSync(
+          WonderCommonlib.NodeExtend.rmdirFilesSync(
             Node.Path.join([|Node.Process.cwd(), "./test/performance/benchmark"|])
           )
       );
