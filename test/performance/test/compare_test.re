@@ -18,7 +18,7 @@ let _ =
       );
       beforeAllPromise(
         () =>
-          PuppeteerUtils.launchHeadlessBrowser()
+          WonderBsPuppeteer.PuppeteerUtils.launchHeadlessBrowser()
           |> then_((browser) => GenerateBenchmark.generate(browser, correctPerformanceTestData))
       );
       describe(
@@ -30,7 +30,7 @@ let _ =
               testPromise(
                 "test compare current and benchmark",
                 () =>
-                  PuppeteerUtils.launchHeadlessBrowser()
+                  WonderBsPuppeteer.PuppeteerUtils.launchHeadlessBrowser()
                   |> then_(
                        (browser) =>
                          Comparer.compare(browser, wrongPerformanceTestData)
@@ -64,7 +64,7 @@ let _ =
               testPromise(
                 "compare at most 3 times",
                 () =>
-                  PuppeteerUtils.launchHeadlessBrowser()
+                  WonderBsPuppeteer.PuppeteerUtils.launchHeadlessBrowser()
                   |> then_(
                        (browser) =>
                          Tester.runTest([|browser|], wrongPerformanceTestData)

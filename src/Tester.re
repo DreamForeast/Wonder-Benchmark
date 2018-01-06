@@ -3,7 +3,7 @@ open PerformanceTestDataType;
 open Js.Promise;
 
 let generateBenchmark = (performanceTestData) =>
-  PuppeteerUtils.launchHeadlessBrowser()
+  WonderBsPuppeteer.PuppeteerUtils.launchHeadlessBrowser()
   |> then_((browser) => GenerateBenchmark.generate(browser, performanceTestData));
 
 let generateReport = (debugFilePath, failList, performanceTestData) =>
@@ -65,7 +65,7 @@ let _compareSpecificCount = (browser, count, performanceTestData) => {
 let runTest = (browserArr, performanceTestData) =>
   (
     switch (browserArr |> Js.Array.length) {
-    | 0 => PuppeteerUtils.launchHeadlessBrowser()
+    | 0 => WonderBsPuppeteer.PuppeteerUtils.launchHeadlessBrowser()
     | _ => browserArr[0] |> resolve
     }
   )
@@ -73,7 +73,11 @@ let runTest = (browserArr, performanceTestData) =>
        (browser) =>
          performanceTestData
          |> _compareSpecificCount(browser, 3)
-         |> then_((data) => PuppeteerUtils.closeBrowser(browser) |> then_((_) => data |> resolve))
+         |> then_(
+              (data) =>
+                WonderBsPuppeteer.PuppeteerUtils.closeBrowser(browser)
+                |> then_((_) => data |> resolve)
+            )
          |> then_(
               (failList) =>
                 Comparer.isPass(failList) ?

@@ -14,14 +14,14 @@ let _ =
       afterAll(() => WonderCommonlib.NodeExtend.rmdirFilesSync(Path.join([|Process.cwd(), "./test/debug"|])));
       beforeAllPromise(
         () =>
-          PuppeteerUtils.launchHeadlessBrowser()
+          WonderBsPuppeteer.PuppeteerUtils.launchHeadlessBrowser()
           |> then_((browser) => GenerateBenchmark.generate(browser, correctPerformanceTestData))
       );
       testPromise(
         "generate debug html files",
         () => {
           let debugFileDir = Path.join([|Process.cwd(), "./test/debug/"|]);
-          PuppeteerUtils.launchHeadlessBrowser()
+          WonderBsPuppeteer.PuppeteerUtils.launchHeadlessBrowser()
           |> then_(
                (browser) =>
                  Comparer.compare(browser, wrongPerformanceTestData)
@@ -60,7 +60,7 @@ let _ =
             "use wd.startDirector instead of wd.initDirector, wd.loopBody",
             () => {
               let debugFileDir = Path.join([|Process.cwd(), "./test/debug/"|]);
-              PuppeteerUtils.launchHeadlessBrowser()
+              WonderBsPuppeteer.PuppeteerUtils.launchHeadlessBrowser()
               |> then_(
                    (browser) =>
                      Comparer.compare(browser, wrongPerformanceTestData)

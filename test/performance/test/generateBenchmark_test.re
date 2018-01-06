@@ -12,13 +12,15 @@ let _ =
       open PerformanceTestDataType;
       afterAll(
         () =>
-          WonderCommonlib.NodeExtend.rmdirFilesSync(Path.join([|Process.cwd(), "./test/performance/benchmark"|]))
+          WonderCommonlib.NodeExtend.rmdirFilesSync(
+            Path.join([|Process.cwd(), "./test/performance/benchmark"|])
+          )
       );
       testPromise(
         "test generate benchmark data to specific dir",
         () =>
           PerformanceTestData.(
-            PuppeteerUtils.launchHeadlessBrowser()
+            WonderBsPuppeteer.PuppeteerUtils.launchHeadlessBrowser()
             |> then_(
                  (browser) =>
                    GenerateBenchmark.generate(browser, correctPerformanceTestData)

@@ -26,8 +26,8 @@ type config = {
 
 type state = {
   config,
-  page: Page.t,
-  browser: Browser.t,
+  page: WonderBsPuppeteer.Page.t,
+  browser: WonderBsPuppeteer.Browser.t,
   scriptFilePathList: list(string),
   dataFilePath:string,
   name: string,

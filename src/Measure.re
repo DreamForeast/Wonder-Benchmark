@@ -10,7 +10,7 @@ open Contract;
 
 open Js.Promise;
 
-open Puppeteer;
+open WonderBsPuppeteer.Puppeteer;
 
 open PerformanceTestDataType;
 
@@ -26,7 +26,7 @@ let _getTimeTextList = (resultDataTimeList) =>
 let _getMedianValue = (list) =>
   List.nth(list |> List.sort((a1, a2) => a1 - a2), List.length(list) / 2);
 
-let _getJSHeapUsedSize: [@bs] (Page.metricsData => int) = [%bs.raw
+let _getJSHeapUsedSize: [@bs] (WonderBsPuppeteer.Page.metricsData => int) = [%bs.raw
   {|
                function(data) {
                  return data.JSHeapUsedSize
@@ -34,7 +34,7 @@ let _getJSHeapUsedSize: [@bs] (Page.metricsData => int) = [%bs.raw
                 |}
 ];
 
-let _getTimestamp: [@bs] (Page.metricsData => float) = [%bs.raw
+let _getTimestamp: [@bs] (WonderBsPuppeteer.Page.metricsData => float) = [%bs.raw
   {|
                function(data) {
                  return data.Timestamp
@@ -42,7 +42,8 @@ let _getTimestamp: [@bs] (Page.metricsData => float) = [%bs.raw
                 |}
 ];
 
-let _computeMemory = (data1: Page.metricsData, data2: Page.metricsData) =>
+let _computeMemory =
+    (data1: WonderBsPuppeteer.Page.metricsData, data2: WonderBsPuppeteer.Page.metricsData) =>
   ([@bs] _getJSHeapUsedSize(data2) - [@bs] _getJSHeapUsedSize(data1)) / (1024 * 1024);
 
 let _computeTimestamp = (data1, data2) =>
@@ -81,7 +82,7 @@ let _addScript = (commonScriptFilePathList, scriptFilePathList, promise) =>
          |> then_(
               ((page, resultData)) =>
                 page
-                |> Page.addScriptTag({
+                |> WonderBsPuppeteer.Page.addScriptTag({
                      "url": Js.Nullable.empty,
                      "content": Js.Nullable.empty,
                      "path": Js.Nullable.return(scriptFilePath)
@@ -114,12 +115,17 @@ let _execFunc =
     ) =>
   promise
   |> then_(
-       (resultData) => browser |> Browser.newPage |> then_((page) => (page, resultData) |> resolve)
+       (resultData) =>
+         browser
+         |> WonderBsPuppeteer.Browser.newPage
+         |> then_((page) => (page, resultData) |> resolve)
      )
   |> _addScript(commonScriptFilePathList, scriptFilePathList)
   |> then_(
        ((page, resultData)) =>
-         page |> Page.metrics() |> then_((data) => (page, resultData, data) |> resolve)
+         page
+         |> WonderBsPuppeteer.Page.metrics()
+         |> then_((data) => (page, resultData, data) |> resolve)
      )
   |> then_(
        ((page, resultData, data)) =>
@@ -130,7 +136,7 @@ let _execFunc =
   |> then_(
        ((page, resultData, lastData, timeData)) =>
          page
-         |> Page.metrics()
+         |> WonderBsPuppeteer.Page.metrics()
          |> then_((data) => (page, resultData, lastData, data, timeData) |> resolve)
      )
   |> then_(
@@ -157,7 +163,7 @@ let _execFunc =
        ((page, resultData)) =>
          switch isClosePage {
          | false => resultData |> resolve
-         | true => page |> Page.close |> then_((_) => resultData |> resolve)
+         | true => page |> WonderBsPuppeteer.Page.close |> then_((_) => resultData |> resolve)
          }
      );
 
