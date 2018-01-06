@@ -21,9 +21,9 @@ let _buildDebugHtmlFileName = (testName, caseName) => {j|$(testName)_$(caseName)
 let _buildDebugHtmlFilePath = (targetAbsoluteFileDir, testName, caseName) =>
   Path.join([|targetAbsoluteFileDir, _buildDebugHtmlFileName(testName, caseName)|]);
 
-let _generateCssFile = (filePath) =>
+/* let _generateCssFile = (filePath) =>
   {||}
-  |> WonderCommonlib.NodeExtend.writeFile(filePath);
+  |> WonderCommonlib.NodeExtend.writeFile(filePath); */
 
 /* todo refactor render test: comparer not return test data! */
 let generateHtmlFiles = (targetAbsoluteFileDir: string, performanceTestData, compareResultList) => {
