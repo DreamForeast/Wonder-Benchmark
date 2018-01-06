@@ -32,11 +32,10 @@ let buildHeadStr = (title) => {j|<!DOCTYPE html>
    <head>
      <meta charset="UTF-8">
      <title>$title</title>
-     <link rel="stylesheet" href="./report.css"/>
    </head>|j};
 
-let buildDebugCssFilePath = (targetAbsoluteFileDir) =>
-  Path.join([|targetAbsoluteFileDir, "report.css"|]);
+/* let buildDebugCssFilePath = (targetAbsoluteFileDir) =>
+  Path.join([|targetAbsoluteFileDir, "report.css"|]); */
 
 let buildFootStr = () => {|</body>
         </html>|};

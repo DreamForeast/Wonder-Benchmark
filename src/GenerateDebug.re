@@ -45,5 +45,5 @@ let generateHtmlFiles = (targetAbsoluteFileDir: string, performanceTestData, com
        }
      );
   /* todo fix render test: generate css */
-  _generateCssFile(GenerateHtmlFile.buildDebugCssFilePath(targetAbsoluteFileDir))
+  /* _generateCssFile(GenerateHtmlFile.buildDebugCssFilePath(targetAbsoluteFileDir)) */
 };
