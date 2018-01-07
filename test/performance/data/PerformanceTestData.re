@@ -1,16 +1,19 @@
 open PerformanceTestDataType;
 
+let commonData = {
+  isClosePage: true,
+  execCountWhenTest: 1,
+  execCountWhenGenerateBenchmark: 2,
+  compareCount: 3,
+  maxAllowDiffTimePercent: 5000,
+  maxAllowDiffMemoryPercent: 5000,
+  benchmarkPath: "./test/performance/benchmark/",
+  generateBaseDebugData: None,
+  scriptFilePathList: []
+};
+
 let correctPerformanceTestData = {
-  commonData: {
-    isClosePage: true,
-    execCountWhenTest: 1,
-    execCountWhenGenerateBenchmark: 2,
-    compareCount: 3,
-    maxAllowDiffTimePercent: 500,
-    maxAllowDiffMemoryPercent: 500,
-    benchmarkPath: "./test/performance/benchmark/",
-    scriptFilePathList: []
-  },
+  commonData,
   testDataList: [
     {
       name: "basic1",
@@ -108,16 +111,7 @@ return {"textArray": ["prepare", "init", "loopBody"], "timeArray": [n1, n2, n3, 
 };
 
 let wrongPerformanceTestData = {
-  commonData: {
-    isClosePage: true,
-    execCountWhenTest: 1,
-    execCountWhenGenerateBenchmark: 2,
-    compareCount: 3,
-    maxAllowDiffTimePercent: 5000,
-    maxAllowDiffMemoryPercent: 5000,
-    benchmarkPath: "./test/performance/benchmark/",
-    scriptFilePathList: []
-  },
+  commonData,
   testDataList: [
     {
       name: "basic1",
@@ -214,8 +208,6 @@ return {"textArray": ["prepare", "init", "loopBody"], "timeArray": [n1, n2, n3, 
   ]
 };
 
-
-
 let wrongPerformanceTestData2 = {
   commonData: {
     isClosePage: true,
@@ -225,6 +217,10 @@ let wrongPerformanceTestData2 = {
     maxAllowDiffTimePercent: 5000,
     maxAllowDiffMemoryPercent: 5000,
     benchmarkPath: "./test/performance/benchmark/",
+    generateBaseDebugData:
+      Some([
+        {sourceScriptFilePath: "./test/res/wd.js", targetScriptFilePath: "./test/base/wd_base.js"}
+      ]),
     scriptFilePathList: []
   },
   testDataList: [

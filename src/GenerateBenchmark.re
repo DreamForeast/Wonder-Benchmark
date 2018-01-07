@@ -71,6 +71,8 @@ let generate = (browser, {commonData} as performanceTestData) => {
                 |> WonderCommonlib.NodeExtend.writeFile(filePath)
               }
             );
+         GenerateBaseDebugUtils.isGenerateBaseDebugData(performanceTestData) ?
+           GenerateBaseDebugUtils.copyBaseScript(performanceTestData) : ();
          browser |> resolve
        }
      )

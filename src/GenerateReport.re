@@ -9,21 +9,40 @@ let _buildHeadStr = () => GenerateHtmlFile.buildHeadStr("performance test");
 let _buildFootStr = () => {|</body>
         </html>|};
 
-let _buildFailCaseListHtmlStr = (targetAbsoluteFilePath, compareResultList) =>
+let _buildFailCaseListHtmlStr = (targetAbsoluteFilePath, compareResultList, performanceTestData) =>
   compareResultList
   |> Comparer.getFailCaseText
   |> List.fold_left(
-       (resultStr, (testName, caseName, text)) => {
-         let debugFilePath = "./" ++ GenerateDebug.buildDebugHtmlFileName(testName, caseName);
-         let title = PerformanceTestDataUtils.buildCaseTitle(testName, caseName);
-         let htmlText = text |> Js.String.replaceByRe([%re {|/\n/g|}], "<br/>");
-         resultStr
-         ++ {j|<section>
-                    <a href="$debugFilePath" target="_blank"><h3>$title</h3></a>
+       (resultStr, (testName, caseName, text)) =>
+         GenerateBaseDebugUtils.isGenerateBaseDebugData(performanceTestData) ?
+           {
+             let targetDebugFilePath =
+               "./" ++ GenerateDebug.buildDebugHtmlFileName(testName, caseName);
+             let baseDebugFilePath =
+               "./" ++ GenerateBaseDebugUtils.buildDebugHtmlFileName(testName, caseName);
+             let title = PerformanceTestDataUtils.buildCaseTitle(testName, caseName);
+             let htmlText = text |> Js.String.replaceByRe([%re {|/\n/g|}], "<br/>");
+             resultStr
+             ++ {j|<section>
+                    <h3>$title</h3>
+                    <a href="$baseDebugFilePath" target="_blank"><h4>baseDebug</h4></a>
+                    <a href="$targetDebugFilePath" target="_blank"><h4>targetDebug</h4></a>
                     <p>$htmlText</p>
                 </section>
                     |j}
-       },
+           } :
+           {
+             let targetDebugFilePath =
+               "./" ++ GenerateDebug.buildDebugHtmlFileName(testName, caseName);
+             let title = PerformanceTestDataUtils.buildCaseTitle(testName, caseName);
+             let htmlText = text |> Js.String.replaceByRe([%re {|/\n/g|}], "<br/>");
+             resultStr
+             ++ {j|<section>
+                    <a href="$targetDebugFilePath" target="_blank"><h3>$title</h3></a>
+                    <p>$htmlText</p>
+                </section>
+                    |j}
+           },
        ""
      );
 
@@ -48,16 +67,21 @@ let _getAllScriptFilePathList = (testDataList) =>
   );
 
 let generateHtmlFile =
-    (targetAbsoluteFilePath: string, ({commonData, testDataList}, compareResultList)) => {
+    (
+      targetAbsoluteFilePath: string,
+      ({commonData, testDataList} as performanceTestData, compareResultList)
+    ) => {
   let htmlStr =
     _buildHeadStr()
     ++ "\n<body>\n"
     ++ GenerateHtmlFile.buildImportScriptStr(
          targetAbsoluteFilePath,
-         commonData.scriptFilePathList,
-         _getAllScriptFilePathList(testDataList)
+         ScriptFileUtils.getAllScriptFilePathList(
+           commonData.scriptFilePathList,
+           _getAllScriptFilePathList(testDataList)
+         )
        )
-    ++ _buildFailCaseListHtmlStr(targetAbsoluteFilePath, compareResultList)
+    ++ _buildFailCaseListHtmlStr(targetAbsoluteFilePath, compareResultList, performanceTestData)
     ++ GenerateHtmlFile.buildFootStr();
   htmlStr |> WonderCommonlib.NodeExtend.writeFile(targetAbsoluteFilePath);
   _generateCssFile(GenerateHtmlFile.buildDebugCssFilePath(targetAbsoluteFilePath |> Path.dirname))

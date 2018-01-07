@@ -4,39 +4,35 @@ open Node;
 
 open Js.Promise;
 
-let _buildDebugScriptStr = (bodyFuncStr) => {
-  let newBodyFuncStr =
-    bodyFuncStr
-    |> Js.String.replaceByRe([%re {|/^.+wd\.initDirector.+/im|}], "wd.startDirector(state);")
-    |> Js.String.replaceByRe([%re {|/^.+wd\.loopBody.+/img|}], "");
-  {j|<script>
-            window.onload = function () {
-                $newBodyFuncStr
-            };
-           </script>|j}
-};
+let _getType = () => "target";
 
-let buildDebugHtmlFileName = (testName, caseName) => {j|$(testName)_$(caseName)_debug.html|j};
+let buildDebugHtmlFileName = (testName, caseName) =>
+  GenerateDebugFileUtils.buildDebugHtmlFileName(testName, caseName, _getType());
 
-let _buildDebugHtmlFilePath = (targetAbsoluteFileDir, testName, caseName) =>
-  Path.join([|targetAbsoluteFileDir, buildDebugHtmlFileName(testName, caseName)|]);
-
-let generateHtmlFiles = (targetAbsoluteFileDir: string, performanceTestData, compareResultList) => {
+let generateHtmlFiles =
+    (targetAbsoluteFileDir: string, {commonData} as performanceTestData, compareResultList) =>
   compareResultList
   |> List.iter(
        ((_, (testName, {name, bodyFuncStr, scriptFilePathList}, _, _))) => {
-         let htmlStr =
-           GenerateHtmlFile.buildHeadStr(buildDebugHtmlFileName(testName, name))
-           ++ "\n<body>\n"
-           ++ GenerateHtmlFile.buildImportScriptStr(
-                targetAbsoluteFileDir,
-                performanceTestData.commonData.scriptFilePathList,
-                scriptFilePathList
-              )
-           ++ _buildDebugScriptStr(bodyFuncStr)
-           ++ GenerateHtmlFile.buildFootStr();
-         htmlStr
-         |> WonderCommonlib.NodeExtend.writeFile(_buildDebugHtmlFilePath(targetAbsoluteFileDir, testName, name))
+         GenerateDebugFileUtils.generate(
+           targetAbsoluteFileDir,
+           (
+             testName,
+             name,
+             ScriptFileUtils.getAllScriptFilePathList(
+               commonData.scriptFilePathList,
+               scriptFilePathList
+             ),
+             bodyFuncStr,
+             _getType()
+           )
+         );
+         GenerateBaseDebugUtils.isGenerateBaseDebugData(performanceTestData) ?
+           GenerateBaseDebugUtils.generateBaseDebugFile(
+             targetAbsoluteFileDir,
+             (testName, name, scriptFilePathList, bodyFuncStr),
+             performanceTestData
+           ) :
+           ()
        }
      );
-};

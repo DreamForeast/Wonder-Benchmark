@@ -12,14 +12,8 @@ let getRelativeFilePath = (targetAbsoluteFileDir, toAbsoluteFilePath) => {
   }
 };
 
-let _getAllScriptFilePathList = (commonScriptFilePathList, scriptFilePathList) : list(string) =>
-  switch scriptFilePathList {
-  | None => commonScriptFilePathList
-  | Some(scriptFilePathList) => commonScriptFilePathList @ scriptFilePathList
-  };
-
-let buildImportScriptStr = (targetAbsoluteFileDir, commonScriptFilePathList, scriptFilePathList) =>
-  _getAllScriptFilePathList(commonScriptFilePathList, scriptFilePathList)
+let buildImportScriptStr = (targetAbsoluteFileDir, scriptFilePathList) =>
+  scriptFilePathList
   |> List.map((scriptFilePath) => getRelativeFilePath(targetAbsoluteFileDir, scriptFilePath))
   |> List.fold_left(
        (resultStr, scriptFilePath) => resultStr ++ {j|<script src="$scriptFilePath"></script>

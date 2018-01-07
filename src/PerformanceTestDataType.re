@@ -5,6 +5,11 @@ type case = {
   errorRate: int
 };
 
+type copiedScriptData = {
+  sourceScriptFilePath: string,
+  targetScriptFilePath: string
+};
+
 type commonData = {
   isClosePage: bool,
   execCountWhenTest: int,
@@ -13,6 +18,9 @@ type commonData = {
   maxAllowDiffTimePercent: int,
   maxAllowDiffMemoryPercent: int,
   benchmarkPath: string,
+  /* copiedScriptDataListWhenGenerateBenchmark: option(list(copiedScriptData)), */
+  generateBaseDebugData: option(list(copiedScriptData)),
+  /* generateBaseDebugData: option(Js.Dict.t(string)), */
   scriptFilePathList: list(string)
 };
 

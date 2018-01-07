@@ -11,10 +11,12 @@ let _ =
       open Node;
       open PerformanceTestDataType;
       afterAll(
-        () =>
+        () => {
           WonderCommonlib.NodeExtend.rmdirFilesSync(
             Path.join([|Process.cwd(), "./test/performance/benchmark"|])
-          )
+          );
+          WonderCommonlib.NodeExtend.rmdirFilesSync(Path.join([|Process.cwd(), "./test/base"|]))
+        }
       );
       testPromise(
         "test generate benchmark data to specific dir",
@@ -29,6 +31,20 @@ let _ =
                           Fs.existsSync("./test/performance/benchmark/basic1.json")
                           |> expect == true
                           |> resolve
+                      )
+               )
+          )
+      );
+      testPromise(
+        "test copy base scripts for generate base debug files",
+        () =>
+          PerformanceTestData.(
+            WonderBsPuppeteer.PuppeteerUtils.launchHeadlessBrowser()
+            |> then_(
+                 (browser) =>
+                   GenerateBenchmark.generate(browser, wrongPerformanceTestData2)
+                   |> then_(
+                        (_) => Fs.existsSync("./test/base/wd_base.js") |> expect == true |> resolve
                       )
                )
           )
