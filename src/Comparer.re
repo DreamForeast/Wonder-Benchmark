@@ -96,7 +96,16 @@ let _isFail = (failMessage) => failMessage |> Js.String.length > 0;
 let isPass = (failList) => failList |> List.length === 0;
 
 let getFailText = (failList) =>
-  failList |> List.fold_left((text, (failMessage, (_, _, _, _))) => text ++ failMessage, "");
+  failList
+  |> List.fold_left(
+       (text, (failMessage, (testName, {name}: case, _, _))) =>
+         text ++ PerformanceTestDataUtils.buildCaseTitle(testName, name) ++ failMessage,
+       ""
+     );
+
+let getFailCaseText = (failList) =>
+  failList
+  |> List.map(((failMessage, (testName, {name}: case, _, _))) => (testName, name, failMessage));
 
 let compare =
   [@bs]
@@ -157,11 +166,12 @@ let compare =
                                 | (failMessage, diffTimePercentList, diffMemoryPercent)
                                     when _isFail(failMessage) => [
                                     (
-                                      PerformanceTestDataUtils.buildCaseTitle(
-                                        actualTestName,
-                                        actualCaseName
-                                      )
-                                      ++ failMessage,
+                                      /* PerformanceTestDataUtils.buildCaseTitle(
+                                           actualTestName,
+                                           actualCaseName
+                                         )
+                                         ++ failMessage, */
+                                      failMessage,
                                       (
                                         actualTestName,
                                         actualCase,

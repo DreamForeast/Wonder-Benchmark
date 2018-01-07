@@ -16,21 +16,17 @@ let _buildDebugScriptStr = (bodyFuncStr) => {
            </script>|j}
 };
 
-let _buildDebugHtmlFileName = (testName, caseName) => {j|$(testName)_$(caseName)_debug.html|j};
+let buildDebugHtmlFileName = (testName, caseName) => {j|$(testName)_$(caseName)_debug.html|j};
 
 let _buildDebugHtmlFilePath = (targetAbsoluteFileDir, testName, caseName) =>
-  Path.join([|targetAbsoluteFileDir, _buildDebugHtmlFileName(testName, caseName)|]);
-
-/* let _generateCssFile = (filePath) =>
-  {||}
-  |> WonderCommonlib.NodeExtend.writeFile(filePath); */
+  Path.join([|targetAbsoluteFileDir, buildDebugHtmlFileName(testName, caseName)|]);
 
 let generateHtmlFiles = (targetAbsoluteFileDir: string, performanceTestData, compareResultList) => {
   compareResultList
   |> List.iter(
        ((_, (testName, {name, bodyFuncStr, scriptFilePathList}, _, _))) => {
          let htmlStr =
-           GenerateHtmlFile.buildHeadStr(_buildDebugHtmlFileName(testName, name))
+           GenerateHtmlFile.buildHeadStr(buildDebugHtmlFileName(testName, name))
            ++ "\n<body>\n"
            ++ GenerateHtmlFile.buildImportScriptStr(
                 targetAbsoluteFileDir,
@@ -43,5 +39,4 @@ let generateHtmlFiles = (targetAbsoluteFileDir: string, performanceTestData, com
          |> WonderCommonlib.NodeExtend.writeFile(_buildDebugHtmlFilePath(targetAbsoluteFileDir, testName, name))
        }
      );
-  /* _generateCssFile(GenerateHtmlFile.buildDebugCssFilePath(targetAbsoluteFileDir)) */
 };

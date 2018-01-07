@@ -34,8 +34,8 @@ let buildHeadStr = (title) => {j|<!DOCTYPE html>
      <title>$title</title>
    </head>|j};
 
-/* let buildDebugCssFilePath = (targetAbsoluteFileDir) =>
-  Path.join([|targetAbsoluteFileDir, "report.css"|]); */
+let buildDebugCssFilePath = (targetAbsoluteFileDir) =>
+  Path.join([|targetAbsoluteFileDir, "report.css"|]);
 
 let buildFootStr = () => {|</body>
         </html>|};

@@ -6,19 +6,29 @@ let generateBenchmark = (performanceTestData) =>
   WonderBsPuppeteer.PuppeteerUtils.launchHeadlessBrowser()
   |> then_((browser) => GenerateBenchmark.generate(browser, performanceTestData));
 
-let generateReport = (debugFilePath, failList, performanceTestData) =>
+let generateReport = (reportFilePath, failList, performanceTestData) =>
   make(
-    (~resolve, ~reject) =>
+    (~resolve, ~reject) => {
+      GenerateReport.generateHtmlFile(reportFilePath, (performanceTestData, failList));
       [@bs]
       resolve(
         GenerateDebug.generateHtmlFiles(
-          Node.Path.dirname(debugFilePath),
+          Node.Path.dirname(reportFilePath),
           performanceTestData,
           failList
         )
       )
+    }
   );
 
+/* let generateReport = (reportFilePath, compareResultData) =>
+   GenerateReport.generateHtmlFile(reportFilePath, compareResultData)
+   |> then_(
+        (htmlStr) => {
+          GenerateDebug.generateHtmlFiles(reportFilePath, compareResultData);
+          reportFilePath |> resolve
+        }
+      ); */
 let _isNotExceedMaxDiffPercent =
     (maxAllowDiffTimePercent, maxAllowDiffMemoryPercent, diffTimePercentList, diffMemoryPercent) =>
   ! (
@@ -107,8 +117,8 @@ let _compareSpecificCount = (browser, count, compareFunc, performanceTestData) =
                             )
                       );
                  /* WonderCommonlib.DebugUtils.logJson(("need:", needReCompareFailList)) |> ignore;
-                 WonderCommonlib.DebugUtils.logJson(("not need:", notNeedReCompareFailList))
-                 |> ignore; */
+                    WonderCommonlib.DebugUtils.logJson(("not need:", notNeedReCompareFailList))
+                    |> ignore; */
                  switch (needReCompareFailList |> List.length) {
                  | 0 => resultFailList @ notNeedReCompareFailList |> resolve
                  | _ =>
@@ -143,11 +153,10 @@ let runTest = (browserArr, {commonData} as performanceTestData) =>
                 |> then_((_) => data |> resolve)
             )
          |> then_(
-              (failList) => {
+              (failList) =>
                 /* WonderCommonlib.DebugUtils.logJson(("failList:", failList)) |> ignore; */
                 Comparer.isPass(failList) ?
                   failList |> resolve :
                   (Comparer.getFailText(failList), failList) |> Obj.magic |> reject
-              }
             )
      ) /* failList |> resolve */;
