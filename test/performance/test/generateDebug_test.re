@@ -8,12 +8,13 @@ let _ =
       open Expect.Operators;
       open Sinon;
       open Js.Promise;
-      open Node;
       open PerformanceTestDataType;
       open PerformanceTestData;
       afterAll(
         () =>
-          WonderCommonlib.NodeExtend.rmdirFilesSync(Path.join([|Process.cwd(), "./test/debug"|]))
+          WonderCommonlib.NodeExtend.rmdirFilesSync(
+            Node.Path.join([|Node.Process.cwd(), "./test/debug"|])
+          )
       );
       beforeAllPromise(
         () =>
@@ -23,7 +24,7 @@ let _ =
       testPromise(
         "only generate target debug html files",
         () => {
-          let debugFileDir = Path.join([|Process.cwd(), "./test/debug/"|]);
+          let debugFileDir = Node.Path.join([|Node.Process.cwd(), "./test/debug/"|]);
           WonderBsPuppeteer.PuppeteerUtils.launchHeadlessBrowser()
           |> then_(
                (browser) =>
@@ -36,15 +37,15 @@ let _ =
                           failList
                         );
                         (
-                          Fs.existsSync(
-                            Path.join([|
-                              Process.cwd(),
+                          Node.Fs.existsSync(
+                            Node.Path.join([|
+                              Node.Process.cwd(),
                               "./test/debug/basic1_pf_test1_target_debug.html"
                             |])
                           ),
-                          Fs.existsSync(
-                            Path.join([|
-                              Process.cwd(),
+                          Node.Fs.existsSync(
+                            Node.Path.join([|
+                              Node.Process.cwd(),
                               "./test/debug/basic1_pf_test2_target_debug.html"
                             |])
                           )
@@ -56,70 +57,88 @@ let _ =
              )
         }
       );
-      testPromise(
-        "generate base and target debug html files",
+      describe(
+        "test generate base debug files",
         () => {
-          let debugFileDir = Path.join([|Process.cwd(), "./test/debug/"|]);
-          WonderBsPuppeteer.PuppeteerUtils.launchHeadlessBrowser()
-          |> then_(
-               (browser) =>
-                 [@bs] Comparer.compare(browser, wrongPerformanceTestData)
-                 |> then_(
-                      (failList) => {
-                        GenerateDebug.generateHtmlFiles(
-                          debugFileDir,
-                          wrongPerformanceTestData2,
-                          failList
-                        );
-                        (
-                          (
-                            Fs.existsSync(
-                              Path.join([|
-                                Process.cwd(),
-                                "./test/debug/basic1_pf_test1_base_debug.html"
-                              |])
-                            ),
-                            Fs.readFileAsUtf8Sync(
-                              Path.join([|
-                                Process.cwd(),
-                                "./test/debug/basic1_pf_test1_base_debug.html"
-                              |])
+          afterEach(
+            () =>
+              WonderCommonlib.NodeExtend.rmdirFilesSync(
+                Node.Path.join([|Node.Process.cwd(), "./test/base"|])
+              )
+          );
+          test(
+            "test copy base scripts",
+            () => {
+              Tester.copyBaseScript(wrongPerformanceTestData2);
+              Node.Fs.existsSync("./test/base/wd_base.js") |> expect == true
+            }
+          );
+          testPromise(
+            "generate base and target debug html files",
+            () => {
+              let debugFileDir = Node.Path.join([|Node.Process.cwd(), "./test/debug/"|]);
+              WonderBsPuppeteer.PuppeteerUtils.launchHeadlessBrowser()
+              |> then_(
+                   (browser) =>
+                     [@bs] Comparer.compare(browser, wrongPerformanceTestData)
+                     |> then_(
+                          (failList) => {
+                            GenerateDebug.generateHtmlFiles(
+                              debugFileDir,
+                              wrongPerformanceTestData2,
+                              failList
+                            );
+                            (
+                              (
+                                Node.Fs.existsSync(
+                                  Node.Path.join([|
+                                    Node.Process.cwd(),
+                                    "./test/debug/basic1_pf_test1_base_debug.html"
+                                  |])
+                                ),
+                                Node.Fs.readFileAsUtf8Sync(
+                                  Node.Path.join([|
+                                    Node.Process.cwd(),
+                                    "./test/debug/basic1_pf_test1_base_debug.html"
+                                  |])
+                                )
+                                |> Js.String.includes("../base/wd_base.js")
+                              ),
+                              (
+                                Node.Fs.existsSync(
+                                  Node.Path.join([|
+                                    Node.Process.cwd(),
+                                    "./test/debug/basic1_pf_test1_target_debug.html"
+                                  |])
+                                ),
+                                Node.Fs.readFileAsUtf8Sync(
+                                  Node.Path.join([|
+                                    Node.Process.cwd(),
+                                    "./test/debug/basic1_pf_test1_target_debug.html"
+                                  |])
+                                )
+                                |> Js.String.includes("../res/wd.js")
+                              ),
+                              Node.Fs.existsSync(
+                                Node.Path.join([|
+                                  Node.Process.cwd(),
+                                  "./test/debug/basic1_pf_test2_base_debug.html"
+                                |])
+                              ),
+                              Node.Fs.existsSync(
+                                Node.Path.join([|
+                                  Node.Process.cwd(),
+                                  "./test/debug/basic1_pf_test2_target_debug.html"
+                                |])
+                              )
                             )
-                            |> Js.String.includes("../base/wd_base.js")
-                          ),
-                          (
-                            Fs.existsSync(
-                              Path.join([|
-                                Process.cwd(),
-                                "./test/debug/basic1_pf_test1_target_debug.html"
-                              |])
-                            ),
-                            Fs.readFileAsUtf8Sync(
-                              Path.join([|
-                                Process.cwd(),
-                                "./test/debug/basic1_pf_test1_target_debug.html"
-                              |])
-                            )
-                            |> Js.String.includes("../res/wd.js")
-                          ),
-                          Fs.existsSync(
-                            Path.join([|
-                              Process.cwd(),
-                              "./test/debug/basic1_pf_test2_base_debug.html"
-                            |])
-                          ),
-                          Fs.existsSync(
-                            Path.join([|
-                              Process.cwd(),
-                              "./test/debug/basic1_pf_test2_target_debug.html"
-                            |])
-                          )
+                            |> expect == ((true, true), (true, true), false, false)
+                            |> resolve
+                          }
                         )
-                        |> expect == ((true, true), (true, true), false, false)
-                        |> resolve
-                      }
-                    )
-             )
+                 )
+            }
+          )
         }
       );
       describe(
@@ -128,7 +147,7 @@ let _ =
           testPromise(
             "use wd.startDirector instead of wd.initDirector, wd.loopBody",
             () => {
-              let debugFileDir = Path.join([|Process.cwd(), "./test/debug/"|]);
+              let debugFileDir = Node.Path.join([|Node.Process.cwd(), "./test/debug/"|]);
               WonderBsPuppeteer.PuppeteerUtils.launchHeadlessBrowser()
               |> then_(
                    (browser) =>
@@ -141,9 +160,9 @@ let _ =
                               failList
                             );
                             let debugFileContent =
-                              Fs.readFileAsUtf8Sync(
-                                Path.join([|
-                                  Process.cwd(),
+                              Node.Fs.readFileAsUtf8Sync(
+                                Node.Path.join([|
+                                  Node.Process.cwd(),
                                   "./test/debug/basic1_pf_test1_target_debug.html"
                                 |])
                               );

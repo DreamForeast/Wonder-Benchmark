@@ -12,7 +12,7 @@ let copyBaseScript = ({commonData}) =>
   |> Js.Option.getExn
   |> List.iter(
        ({sourceScriptFilePath, targetScriptFilePath}) =>
-       /* WonderCommonlib.DebugUtils.log(targetScriptFilePath) |> ignore */
+         /* WonderCommonlib.DebugUtils.log(targetScriptFilePath) |> ignore */
          WonderCommonlib.NodeExtend.writeFile(
            targetScriptFilePath,
            Fs.readFileAsUtf8Sync(sourceScriptFilePath)
@@ -45,8 +45,7 @@ let _getAllScriptFilePathList = (scriptFilePathList, {commonData}) : list(string
          | matchedList when matchedList |> List.length === 0 => scriptFilePath
          | matchedList => (matchedList |> List.hd).targetScriptFilePath
          }
-     )
-  |> WonderCommonlib.DebugUtils.logJson;
+     );
 
 let generateBaseDebugFile =
     (
@@ -54,7 +53,6 @@ let generateBaseDebugFile =
       (testName, name, scriptFilePathList, bodyFuncStr),
       {commonData} as performanceTestData
     ) =>
-  /* WonderCommonlib.DebugUtils.logJson(("generate: ", generateBaseDebugData)) |> ignore; */
   generate(
     targetAbsoluteFileDir,
     (

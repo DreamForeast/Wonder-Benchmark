@@ -6,6 +6,10 @@ let generateBenchmark = (performanceTestData) =>
   WonderBsPuppeteer.PuppeteerUtils.launchHeadlessBrowser()
   |> then_((browser) => GenerateBenchmark.generate(browser, performanceTestData));
 
+let copyBaseScript = (performanceTestData) =>
+  GenerateBaseDebugUtils.isGenerateBaseDebugData(performanceTestData) ?
+    GenerateBaseDebugUtils.copyBaseScript(performanceTestData) : ();
+
 let generateReport = (reportFilePath, failList, performanceTestData) =>
   make(
     (~resolve, ~reject) => {

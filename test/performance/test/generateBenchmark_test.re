@@ -15,7 +15,6 @@ let _ =
           WonderCommonlib.NodeExtend.rmdirFilesSync(
             Path.join([|Process.cwd(), "./test/performance/benchmark"|])
           );
-          WonderCommonlib.NodeExtend.rmdirFilesSync(Path.join([|Process.cwd(), "./test/base"|]))
         }
       );
       testPromise(
@@ -35,19 +34,5 @@ let _ =
                )
           )
       );
-      testPromise(
-        "test copy base scripts for generate base debug files",
-        () =>
-          PerformanceTestData.(
-            WonderBsPuppeteer.PuppeteerUtils.launchHeadlessBrowser()
-            |> then_(
-                 (browser) =>
-                   GenerateBenchmark.generate(browser, wrongPerformanceTestData2)
-                   |> then_(
-                        (_) => Fs.existsSync("./test/base/wd_base.js") |> expect == true |> resolve
-                      )
-               )
-          )
-      )
     }
   );
