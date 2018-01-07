@@ -72,9 +72,10 @@ let _ =
                                     (
                                       Comparer.isPass(failList),
                                       failText |> Js.String.includes("pf_test2"),
-                                      Js.Re.test(failText, [%re {|/-\d+%/g|}])
+                                      Js.Re.test(failText, [%re {|/-\d+%/g|}]),
+                                      Js.Re.test(failText, [%re {|/--\d+%/g|}])
                                     )
-                                    |> expect == (false, true, true)
+                                    |> expect == (false, true, true, false)
                                     |> resolve
                                   }
                                 )

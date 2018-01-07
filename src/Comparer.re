@@ -30,7 +30,9 @@ let _isInRange = (actual, (min, max)) => actual >= min && actual <= max;
 let _getDiffPercentStr = (diff) =>
   switch diff {
   | value when value >= 0 => {j|+$diff%|j}
-  | _ => {j|-$diff%|j}
+  | value =>
+    let diff = value |> Js.Math.abs_int;
+    {j|-$diff%|j}
   };
 
 let _getDiffPercent = (actualValue, targetValue) => {
