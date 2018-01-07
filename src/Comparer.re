@@ -41,7 +41,7 @@ let _getDiffPercent = (actualValue, targetValue) => {
   switch targetValue {
   | 0 => 1000
   | _ =>
-    (actualValue - targetValue |> Js.Math.abs_int |> Number.intToFloat)
+    (actualValue - targetValue |> Number.intToFloat)
     /. (targetValue |> Number.intToFloat)
     *. 100.0
     |> Js.Math.unsafe_round

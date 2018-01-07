@@ -29,7 +29,7 @@ let _ =
         () =>
           describe(
             "compare",
-            () =>
+            () => {
               testPromise(
                 "test compare current and benchmark",
                 () =>
@@ -55,7 +55,33 @@ let _ =
                               }
                             )
                      )
+              );
+              describe(
+                "fix bug",
+                () =>
+                  testPromise(
+                    "if current run faster than benchmark, diff should be -xxx%",
+                    () =>
+                      WonderBsPuppeteer.PuppeteerUtils.launchHeadlessBrowser()
+                      |> then_(
+                           (browser) =>
+                             [@bs] Comparer.compare(browser, wrongPerformanceTestData2)
+                             |> then_(
+                                  (failList) => {
+                                    let failText = Comparer.getFailText(failList);
+                                    (
+                                      Comparer.isPass(failList),
+                                      failText |> Js.String.includes("pf_test2"),
+                                      Js.Re.test(failText, [%re {|/-\d+%/g|}])
+                                    )
+                                    |> expect == (false, true, true)
+                                    |> resolve
+                                  }
+                                )
+                         )
+                  )
               )
+            }
           )
       );
       describe(
