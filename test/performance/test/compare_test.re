@@ -14,7 +14,10 @@ let _ =
       beforeEach(() => sandbox := createSandbox());
       afterEach(() => restoreSandbox(refJsObjToSandbox(sandbox^)));
       afterAll(
-        () => GenerateBenchmark.removeBenchmarks(PerformanceTestData.correctPerformanceTestData)
+        () =>
+          GenerateBenchmark.removeFiles(
+            Node.Path.join([|Node.Process.cwd(), "./test/performance/benchmark"|])
+          )
       );
       beforeAllPromise(
         () =>

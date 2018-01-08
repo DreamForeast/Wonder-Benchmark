@@ -12,10 +12,7 @@ let _ =
       open PerformanceTestData;
       afterEach(
         () =>
-          GenerateDebug.removeDebugFiles(
-            Node.Path.join([|Node.Process.cwd(), "./test/debug"|]),
-            wrongPerformanceTestData2
-          )
+          GenerateDebug.removeFiles(Node.Path.join([|Node.Process.cwd(), "./test/debug"|]), None)
       );
       beforeAllPromise(
         () =>
@@ -61,6 +58,13 @@ let _ =
       describe(
         "test generate base debug files",
         () => {
+          afterEach(
+            () =>
+              GenerateDebug.removeFiles(
+                Node.Path.join([|Node.Process.cwd(), "./test/debug"|]),
+                Some(Node.Path.join([|Node.Process.cwd(), "./test/base"|]))
+              )
+          );
           test(
             "test copy base scripts",
             () => {

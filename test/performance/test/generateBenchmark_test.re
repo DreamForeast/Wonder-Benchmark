@@ -11,9 +11,10 @@ let _ =
       open Node;
       open PerformanceTestDataType;
       afterEach(
-        () => {
-          GenerateBenchmark.removeBenchmarks(PerformanceTestData.correctPerformanceTestData)
-        }
+        () =>
+          GenerateBenchmark.removeFiles(
+            Node.Path.join([|Node.Process.cwd(), "./test/performance/benchmark"|])
+          )
       );
       testPromise(
         "test generate benchmark data to specific dir",
@@ -31,6 +32,6 @@ let _ =
                       )
                )
           )
-      );
+      )
     }
   );

@@ -12,9 +12,9 @@ let buildDebugHtmlFileName = (testName, caseName) =>
 let _removeTargetDebugFiles = (targetAbsoluteFileDir) =>
   GenerateDebugFileUtils.removeDebugFiles(targetAbsoluteFileDir);
 
-let removeDebugFiles = (targetAbsoluteFileDir, performanceTestData) => {
-  targetAbsoluteFileDir |> _removeTargetDebugFiles;
-  GenerateBaseDebugUtils.removeDebugFiles(performanceTestData)
+let removeFiles = (debugFileDir, copiedScriptFileDir: option(string)) => {
+  debugFileDir |> _removeTargetDebugFiles;
+  GenerateBaseDebugUtils.removeDebugFiles(copiedScriptFileDir)
 };
 
 let generateHtmlFiles =

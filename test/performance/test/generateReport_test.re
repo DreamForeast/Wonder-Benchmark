@@ -13,7 +13,7 @@ let _ =
       open PerformanceTestData;
       afterEach(
         () =>
-          GenerateReport.removeReportFile(Node.Path.join([|Node.Process.cwd(), "./test/report/report.html"|]))
+          GenerateReport.removeFile(Node.Path.join([|Node.Process.cwd(), "./test/report/report.html"|]))
       );
       beforeAllPromise(
         () =>

@@ -20,7 +20,8 @@ let _buildDebugScriptStr = (bodyFuncStr) => {
 };
 
 let removeDebugFiles = (targetAbsoluteFileDir) =>
-  WonderCommonlib.NodeExtend.rmdirFilesSync(targetAbsoluteFileDir) |> ignore;
+  Fs.existsSync(targetAbsoluteFileDir) ?
+    WonderCommonlib.NodeExtend.rmdirFilesSync(targetAbsoluteFileDir) : ();
 
 let generate =
     (targetAbsoluteFileDir, (testName, name, scriptFilePathList, bodyFuncStr, debugFileType)) => {

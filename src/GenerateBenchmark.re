@@ -38,8 +38,8 @@ let _buildDataFilePath = (benchmarkPath, fileName) => Path.join([|benchmarkPath,
 let getDataFilePath = (testName, {benchmarkPath}) =>
   _buildDataFilePath(benchmarkPath, BenchmarkDataConverter.buildDataFileName(testName));
 
-let removeBenchmarks = ({commonData}) =>
-  WonderCommonlib.NodeExtend.rmdirFilesSync(commonData.benchmarkPath);
+let removeFiles = (benchmarkDir) =>
+  Fs.existsSync(benchmarkDir) ? WonderCommonlib.NodeExtend.rmdirFilesSync(benchmarkDir) : ();
 
 let generate = (browser, {commonData} as performanceTestData) => {
   let {benchmarkPath, execCountWhenGenerateBenchmark} = commonData;
