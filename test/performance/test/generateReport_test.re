@@ -11,9 +11,9 @@ let _ =
       open Node;
       open PerformanceTestDataType;
       open PerformanceTestData;
-      afterAll(
+      afterEach(
         () =>
-          WonderCommonlib.NodeExtend.rmdirFilesSync(Path.join([|Process.cwd(), "./test/report"|]))
+          GenerateReport.removeReportFile(Node.Path.join([|Node.Process.cwd(), "./test/report/report.html"|]))
       );
       beforeAllPromise(
         () =>
@@ -69,9 +69,18 @@ let _ =
                           |> Js.String.includes("base_debug.html"),
                           Fs.readFileAsUtf8Sync(reportFilePath)
                           |> Js.String.includes("target_debug.html"),
-
-                          Fs.existsSync(Path.join([|Process.cwd(), "./test/report/basic1_pf_test2_base_debug.html"|])),
-                          Fs.existsSync(Path.join([|Process.cwd(), "./test/report/basic1_pf_test2_target_debug.html"|]))
+                          Fs.existsSync(
+                            Path.join([|
+                              Process.cwd(),
+                              "./test/report/basic1_pf_test2_base_debug.html"
+                            |])
+                          ),
+                          Fs.existsSync(
+                            Path.join([|
+                              Process.cwd(),
+                              "./test/report/basic1_pf_test2_target_debug.html"
+                            |])
+                          )
                         )
                         |> expect == (true, true, true, true, true)
                         |> resolve

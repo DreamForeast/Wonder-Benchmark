@@ -38,21 +38,9 @@ let _buildDataFilePath = (benchmarkPath, fileName) => Path.join([|benchmarkPath,
 let getDataFilePath = (testName, {benchmarkPath}) =>
   _buildDataFilePath(benchmarkPath, BenchmarkDataConverter.buildDataFileName(testName));
 
-/*
- let _generateCaseData = ((caseName, errorRate, timestamp, timeTextList, timeList, memory)) => {
-   let timeCaseStr = _buildTimeCaseStr(timeTextList, timeList);
-   {j|
-            {
-                "name": "$caseName",
-                "timestamp":$timestamp,
-                "time_detail": [
-                    $timeCaseStr
-                ],
-                "memory": $memory,
-                "error_rate": $errorRate
-            },
-        |j}
- }; */
+let removeBenchmarks = ({commonData}) =>
+  WonderCommonlib.NodeExtend.rmdirFilesSync(commonData.benchmarkPath);
+
 let generate = (browser, {commonData} as performanceTestData) => {
   let {benchmarkPath, execCountWhenGenerateBenchmark} = commonData;
   Measure.measure(browser, execCountWhenGenerateBenchmark, performanceTestData)

@@ -10,11 +10,9 @@ let _ =
       open Js.Promise;
       open Node;
       open PerformanceTestDataType;
-      afterAll(
+      afterEach(
         () => {
-          WonderCommonlib.NodeExtend.rmdirFilesSync(
-            Path.join([|Process.cwd(), "./test/performance/benchmark"|])
-          );
+          GenerateBenchmark.removeBenchmarks(PerformanceTestData.correctPerformanceTestData)
         }
       );
       testPromise(

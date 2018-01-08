@@ -9,6 +9,14 @@ let _getType = () => "target";
 let buildDebugHtmlFileName = (testName, caseName) =>
   GenerateDebugFileUtils.buildDebugHtmlFileName(testName, caseName, _getType());
 
+let _removeTargetDebugFiles = (targetAbsoluteFileDir) =>
+  GenerateDebugFileUtils.removeDebugFiles(targetAbsoluteFileDir);
+
+let removeDebugFiles = (targetAbsoluteFileDir, performanceTestData) => {
+  targetAbsoluteFileDir |> _removeTargetDebugFiles;
+  GenerateBaseDebugUtils.removeDebugFiles(performanceTestData)
+};
+
 let generateHtmlFiles =
     (targetAbsoluteFileDir: string, {commonData} as performanceTestData, compareResultList) =>
   compareResultList

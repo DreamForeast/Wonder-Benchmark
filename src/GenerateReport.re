@@ -66,6 +66,12 @@ let _getAllScriptFilePathList = (testDataList) =>
        )
   );
 
+let removeReportFile = (reportFilePath) =>
+  WonderCommonlib.NodeExtend.rmdirFilesSync(reportFilePath |> Path.dirname);
+
+let removeDebugFiles = (reportFilePath) =>
+  GenerateDebug.removeDebugFiles(reportFilePath |> Path.dirname);
+
 let generateHtmlFile =
     (
       targetAbsoluteFilePath: string,

@@ -10,10 +10,11 @@ let _ =
       open Js.Promise;
       open PerformanceTestDataType;
       open PerformanceTestData;
-      afterAll(
+      afterEach(
         () =>
-          WonderCommonlib.NodeExtend.rmdirFilesSync(
-            Node.Path.join([|Node.Process.cwd(), "./test/debug"|])
+          GenerateDebug.removeDebugFiles(
+            Node.Path.join([|Node.Process.cwd(), "./test/debug"|]),
+            wrongPerformanceTestData2
           )
       );
       beforeAllPromise(
@@ -60,12 +61,6 @@ let _ =
       describe(
         "test generate base debug files",
         () => {
-          afterEach(
-            () =>
-              WonderCommonlib.NodeExtend.rmdirFilesSync(
-                Node.Path.join([|Node.Process.cwd(), "./test/base"|])
-              )
-          );
           test(
             "test copy base scripts",
             () => {

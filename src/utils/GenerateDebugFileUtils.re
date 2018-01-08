@@ -19,6 +19,9 @@ let _buildDebugScriptStr = (bodyFuncStr) => {
            </script>|j}
 };
 
+let removeDebugFiles = (targetAbsoluteFileDir) =>
+  WonderCommonlib.NodeExtend.rmdirFilesSync(targetAbsoluteFileDir) |> ignore;
+
 let generate =
     (targetAbsoluteFileDir, (testName, name, scriptFilePathList, bodyFuncStr, debugFileType)) => {
   let htmlStr =

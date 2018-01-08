@@ -14,10 +14,7 @@ let _ =
       beforeEach(() => sandbox := createSandbox());
       afterEach(() => restoreSandbox(refJsObjToSandbox(sandbox^)));
       afterAll(
-        () =>
-          WonderCommonlib.NodeExtend.rmdirFilesSync(
-            Node.Path.join([|Node.Process.cwd(), "./test/performance/benchmark"|])
-          )
+        () => GenerateBenchmark.removeBenchmarks(PerformanceTestData.correctPerformanceTestData)
       );
       beforeAllPromise(
         () =>
