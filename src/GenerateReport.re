@@ -67,7 +67,8 @@ let _getAllScriptFilePathList = (testDataList) =>
   );
 
 let removeFile = (reportFilePath) =>
-  WonderCommonlib.NodeExtend.rmdirFilesSync(reportFilePath |> Path.dirname);
+  Fs.existsSync(reportFilePath) ?
+    WonderCommonlib.NodeExtend.rmdirFilesSync(reportFilePath |> Path.dirname) : ();
 
 let generateHtmlFile =
     (

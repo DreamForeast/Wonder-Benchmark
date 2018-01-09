@@ -11,12 +11,16 @@ let copyBaseScript = ({commonData}) =>
   commonData.generateBaseDebugData
   |> Js.Option.getExn
   |> List.iter(
-       ({sourceScriptFilePath, targetScriptFilePath}) =>
-         /* WonderCommonlib.DebugUtils.log(targetScriptFilePath) |> ignore */
+       ({sourceScriptFilePath, targetScriptFilePath}) => {
+         WonderCommonlib.DebugUtils.log(
+           {j|copy $(sourceScriptFilePath) to $(targetScriptFilePath)...|j}
+         )
+         |> ignore;
          WonderCommonlib.NodeExtend.writeFile(
            targetScriptFilePath,
            Fs.readFileAsUtf8Sync(sourceScriptFilePath)
          )
+       }
      );
 
 let removeDebugFiles = (copiedScriptFileDir) =>

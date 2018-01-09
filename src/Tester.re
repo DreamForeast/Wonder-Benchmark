@@ -126,6 +126,7 @@ let _compareSpecificCount = (browser, count, compareFunc, performanceTestData) =
                  switch (needReCompareFailList |> List.length) {
                  | 0 => resultFailList @ notNeedReCompareFailList |> resolve
                  | _ =>
+                   WonderCommonlib.DebugUtils.logJson(Comparer.getFailText(failList)) |> ignore;
                    _compare(
                      browser,
                      count - 1,
