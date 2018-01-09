@@ -120,13 +120,10 @@ let _compareSpecificCount = (browser, count, compareFunc, performanceTestData) =
                               diffMemoryPercent
                             )
                       );
-                 /* WonderCommonlib.DebugUtils.logJson(("need:", needReCompareFailList)) |> ignore;
-                    WonderCommonlib.DebugUtils.logJson(("not need:", notNeedReCompareFailList))
-                    |> ignore; */
                  switch (needReCompareFailList |> List.length) {
                  | 0 => resultFailList @ notNeedReCompareFailList |> resolve
                  | _ =>
-                   WonderCommonlib.DebugUtils.logJson(Comparer.getFailText(failList)) |> ignore;
+                   WonderCommonlib.DebugUtils.log(Comparer.getFailText(failList)) |> ignore;
                    _compare(
                      browser,
                      count - 1,
@@ -159,7 +156,6 @@ let runTest = (browserArr, {commonData} as performanceTestData) =>
             )
          |> then_(
               (failList) =>
-                /* WonderCommonlib.DebugUtils.logJson(("failList:", failList)) |> ignore; */
                 Comparer.isPass(failList) ?
                   failList |> resolve :
                   (Comparer.getFailText(failList), failList) |> Obj.magic |> reject

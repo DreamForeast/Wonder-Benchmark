@@ -56,7 +56,7 @@ let generate = (browser, {commonData} as performanceTestData) => {
                   );
                 WonderCommonlib.DebugUtils.log({j|generate benchmark:$filePath...|j}) |> ignore;
                 BenchmarkDataConverter.convertToJsonStr(testName, resultCaseList)
-                |> WonderCommonlib.DebugUtils.logJson
+                |> WonderCommonlib.DebugUtils.log
                 |> WonderCommonlib.NodeExtend.writeFile(filePath)
               }
             );
