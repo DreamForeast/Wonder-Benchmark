@@ -237,6 +237,76 @@ var testScript = {
                              |> resolve
                          )
                     }
+                  );
+                  test(
+                    "only replace fail cases' benchmark, not change correct ones' benchmark",
+                    () => {
+                      let benchmarkFilePath = "./test/benchmark/test.json";
+                      WonderCommonlib.NodeExtend.writeFile(
+                        benchmarkFilePath,
+                        {|
+{
+  "name": "test.json",
+  "cases": [
+    {
+      "name": "case1",
+      "timestamp": 112,
+      "time_detail": [
+        {"name": "loopBody", "time": 25}
+      ],
+      "memory": 2,
+      "error_rate": 10
+    },
+    {
+      "name": "case2",
+      "timestamp": 5,
+      "time_detail": [
+        {"name": "loopBody", "time": 10}
+      ],
+      "memory": 5,
+      "error_rate": 5
+    }
+    ]
+  }
+                        |}
+                      );
+                      GenerateBenchmarkTool.changeCaseBenchmark(
+                        "./test/benchmark/",
+                        "test",
+                        ("case2", 1, 2, ["loopBody"], [3], 4, "")
+                      );
+                      Node.Fs.readFileAsUtf8Sync(benchmarkFilePath)
+                      |> Js.Json.parseExn
+                      |>
+                      expect == (
+                                  {|
+                        {
+                          "name": "test.json",
+                          "cases": [
+                            {
+                                "name": "case1",
+                                "timestamp":112,
+                                "time_detail": [
+                                    {"name":"loopBody","time":25}
+                                ],
+                                "memory": 2,
+                                "error_rate": 10
+                            },
+
+                            {
+                                "name": "case2",
+                                "timestamp":2,
+                                "time_detail": [
+                                    {"name":"loopBody","time":3}
+                                ],
+                                "memory": 4,
+                                "error_rate": 1
+                            }]
+                          }
+  |}
+                                  |> Js.Json.parseExn
+                                )
+                    }
                   )
                 }
               );

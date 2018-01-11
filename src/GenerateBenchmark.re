@@ -35,7 +35,7 @@ open BenchmarkDataType;
    ); */
 let _buildDataFilePath = (benchmarkPath, fileName) => Path.join([|benchmarkPath, fileName|]);
 
-let getDataFilePath = (testName, {benchmarkPath}) =>
+let getDataFilePath = (testName, benchmarkPath) =>
   _buildDataFilePath(benchmarkPath, BenchmarkDataConverter.buildDataFileName(testName));
 
 let removeFiles = (benchmarkDir) =>
@@ -46,6 +46,57 @@ let _generateBenchmark = (benchmarkPath, testName, resultCaseList) => {
     _buildDataFilePath(benchmarkPath, BenchmarkDataConverter.buildDataFileName(testName));
   WonderCommonlib.DebugUtils.log({j|generate benchmark:$filePath...|j}) |> ignore;
   BenchmarkDataConverter.convertToJsonStr(testName, resultCaseList)
+  |> WonderCommonlib.DebugUtils.log
+  |> WonderCommonlib.NodeExtend.writeFile(filePath)
+};
+
+let getBenchmarkData = (testName, benchmarkPath) =>
+  BenchmarkDataConverter.convertToData(
+    Fs.readFileAsUtf8Sync(getDataFilePath(testName, benchmarkPath)) |> Js.Json.parseExn
+  );
+
+let _convertResultTimeDataToConvertedData =
+    ({name, errorRate, timestamp, timeArray, timeTextArray}) => (
+  name,
+  errorRate,
+  timestamp,
+  timeArray |> Array.to_list,
+  timeTextArray |> Array.to_list
+);
+
+let _changeCaseBenchmark = (benchmarkPath, testName, resultCase) => {
+  let filePath =
+    _buildDataFilePath(benchmarkPath, BenchmarkDataConverter.buildDataFileName(testName));
+  let (caseName, errorRate, timestamp, timeTextList, timeList, memory, _) = resultCase;
+  WonderCommonlib.DebugUtils.log(
+    {j|generate new  benchmark case data(filePath:$(filePath), case name:$(caseName))...|j}
+  )
+  |> ignore;
+  let (name, cases) = getBenchmarkData(testName, benchmarkPath);
+  let caseArr = cases |> Array.of_list;
+  let newCaseArr =
+    caseArr
+    |> Js.Array.copy;
+  newCaseArr
+  |> Js.Array.spliceInPlace(
+       ~pos=caseArr |> Js.Array.findIndex(((name, _, _, _, _, _)) => name === caseName),
+       ~remove=1,
+       ~add=[|(caseName, errorRate, timestamp, timeTextList, timeList, memory)|]
+     );
+  newCaseArr
+  |> Array.to_list
+  |> List.map(
+       ((caseName, errorRate, timestamp, timeTextList, timeList, memory)) => (
+         caseName,
+         errorRate,
+         timestamp,
+         timeTextList,
+         timeList,
+         memory,
+         ""
+       )
+     )
+  |> BenchmarkDataConverter.convertToJsonStr(testName)
   |> WonderCommonlib.DebugUtils.log
   |> WonderCommonlib.NodeExtend.writeFile(filePath)
 };
@@ -67,7 +118,7 @@ let generateCase =
          )
       |> then_(
            (resultCaseList) => {
-             _generateBenchmark(benchmarkPath, testName, resultCaseList);
+             _changeCaseBenchmark(benchmarkPath, testName, resultCaseList |> List.hd);
              browser |> resolve
            }
          )

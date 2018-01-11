@@ -87,12 +87,6 @@ let _compareTime = (actualTimeList, actualTimeTextList, benchmarkTimeList, error
     benchmarkTimeList
   );
 
-let _getBenchmarkData = (testName, commonData) =>
-  BenchmarkDataConverter.convertToData(
-    Fs.readFileAsUtf8Sync(GenerateBenchmark.getDataFilePath(testName, commonData))
-    |> Js.Json.parseExn
-  );
-
 let _isFail = (failMessage) => failMessage |> Js.String.length > 0;
 
 let isPass = (failList) => failList |> List.length === 0;
@@ -124,7 +118,7 @@ let compare =
              resultList
              |> List.fold_left(
                   (compareResultList, (actualTestName, actualResultCaseList)) =>
-                    switch (_getBenchmarkData(actualTestName, commonData)) {
+                    switch (GenerateBenchmark.getBenchmarkData(actualTestName, commonData.benchmarkPath)) {
                     | (benchmarkTestName, _) when benchmarkTestName !== actualTestName =>
                       ExceptionHandleSystem.throwMessage(
                         {j|benchmarkTestName:$benchmarkTestName should === actualTestName:$actualTestName|j}
