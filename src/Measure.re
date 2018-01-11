@@ -119,7 +119,6 @@ let _execFunc =
          |> Page.evaluateWithArg([@bs] _execBodyFunc, bodyFuncStr)
          |> then_(
               (timeData: bodyFuncReturnValue) => {
-                WonderCommonlib.DebugUtils.log("finish") |> ignore;
                 resolve((page, resultData, data, timeData))
               }
             )
