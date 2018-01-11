@@ -21,3 +21,6 @@ let compareSpecificCount =
     generateCaseBenchmarkFunc,
     performanceTestData
   );
+
+let removeFiles = (dir) =>
+  Node.Fs.existsSync(dir) ? WonderCommonlib.NodeExtend.rmdirFilesSync(dir) : ();

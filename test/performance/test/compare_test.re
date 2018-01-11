@@ -98,35 +98,87 @@ let _ =
               describe(
                 "compare at most 3 times",
                 () =>
-                  testPromise(
+                  describe(
                     "re-generate benchmark before compare after first compare",
-                    () =>
-                      WonderBsPuppeteer.PuppeteerUtils.launchHeadlessBrowser()
-                      |> then_(
-                           (browser) => {
-                             Tester.copyBaseScript(wrongPerformanceTestData);
-                             Tester.runTest([|browser|], wrongPerformanceTestData)
-                             |> then_((failList) => pass |> resolve)
-                             |> catch(
-                                  (err) =>
-                                    /* WonderCommonlib.DebugUtils.log(err) |> ignore;
-                                       let (failText, failList) = err |> Obj.magic;
-                                       (
-                                         /* Comparer.isPass(failList), */
-                                         failText |> Js.String.includes("pf_test1"),
-                                         failText |> Js.String.includes("pf_test2"),
-                                         failText |> Js.String.includes("expect time:prepare"),
-                                         failText |> Js.String.includes("expect time:loopBody"),
-                                         failText |> Js.String.includes("expect memory")
-                                       )
-                                       |> expect == (true, false, true, true, true)
-                                       /* |> expect == (true, false) */
-                                       |> resolve
-                                       |> Obj.magic */
-                                    fail("should be pass, but actual is fail") |> resolve
-                                )
-                           }
-                         )
+                    () => {
+                      let _restoreBenchmark = (promise) =>
+                        promise
+                        |> then_(
+                             (failList) =>
+                               Tester.generateBenchmark(correctPerformanceTestData)
+                               |> then_((_) => failList |> resolve)
+                           );
+                      /* afterEach(
+                                                 () =>
+                         Tester.generateBenchmark(correctPerformanceTestData)
+                                   /* GenerateBenchmark.removeFiles(
+                                     Node.Path.join([|Node.Process.cwd(), "./test/performance/benchmark"|])
+                                   ) */
+                                               ); */
+                      testPromise(
+                        "test pass",
+                        () =>
+                          WonderBsPuppeteer.PuppeteerUtils.launchHeadlessBrowser()
+                          |> then_(
+                               (browser) => {
+                                 Tester.copyBaseScript(wrongPerformanceTestData);
+                                 Tester.runTest([|browser|], wrongPerformanceTestData)
+                                 |> _restoreBenchmark
+                                 |> then_((failList) => pass |> resolve)
+                                 |> catch(
+                                      (err) => {
+                                        WonderCommonlib.DebugUtils.log(err) |> ignore;
+                                        fail("should be pass, but actual is fail") |> resolve
+                                      }
+                                    )
+                               }
+                             )
+                      );
+                      testPromise(
+                        "test fail",
+                        () =>
+                          WonderBsPuppeteer.PuppeteerUtils.launchHeadlessBrowser()
+                          |> then_(
+                               (browser) => {
+                                 Tester.copyBaseScript(wrongPerformanceTestData);
+                                 let _setFakeBaseScript = () =>
+                                   Node.Fs.writeFileAsUtf8Sync(
+                                     "./test/base/test/res/script1.js",
+                                     {|
+
+var testScript = {
+    add: (a, b) => {
+      var sum = 0;
+      for(var i = 0; i < 10000; i++){
+
+        sum = sum+ ( a + b );
+      }
+
+      return sum;
+    }
+}
+    |}
+                                   );
+                                 _setFakeBaseScript();
+                                 Tester.runTest([|browser|], wrongPerformanceTestData3)
+                                 |> _restoreBenchmark
+                                 |> then_((failList) => pass |> resolve)
+                                 |> catch(
+                                      (err) => {
+                                        let (failText, failList) = err |> Obj.magic;
+                                        (
+                                          failText |> Js.String.includes("pf_test1"),
+                                          failText |> Js.String.includes("pf_test2")
+                                        )
+                                        |> expect == (false, true)
+                                        |> resolve
+                                        |> Obj.magic
+                                      }
+                                    )
+                               }
+                             )
+                      )
+                    }
                   )
               );
               describe(
