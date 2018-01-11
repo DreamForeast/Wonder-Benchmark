@@ -1,5 +1,3 @@
-let getAllScriptFilePathList = (commonScriptFilePathList, scriptFilePathList) : list(string) =>
-  switch scriptFilePathList {
-  | None => commonScriptFilePathList
-  | Some(scriptFilePathList) => commonScriptFilePathList @ scriptFilePathList
-  };
+open PerformanceTestDataType;
+
+let getAllScriptFilePathList = (commonData) : list(string) => commonData.scriptFilePathList;

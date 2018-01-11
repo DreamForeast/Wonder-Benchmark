@@ -14,11 +14,7 @@ let _ =
         () =>
           GenerateDebug.removeFiles(Node.Path.join([|Node.Process.cwd(), "./test/debug"|]), None)
       );
-      beforeAllPromise(
-        () =>
-          WonderBsPuppeteer.PuppeteerUtils.launchHeadlessBrowser()
-          |> then_((browser) => GenerateBenchmark.generate(browser, correctPerformanceTestData))
-      );
+      beforeAllPromise(() => Tester.generateBenchmark(correctPerformanceTestData));
       testPromise(
         "only generate target debug html files",
         () => {
@@ -26,7 +22,7 @@ let _ =
           WonderBsPuppeteer.PuppeteerUtils.launchHeadlessBrowser()
           |> then_(
                (browser) =>
-                 [@bs] Comparer.compare(browser, wrongPerformanceTestData)
+                 Tester.compare(browser, wrongPerformanceTestData)
                  |> then_(
                       (failList) => {
                         GenerateDebug.generateHtmlFiles(
@@ -65,13 +61,13 @@ let _ =
                 Some(Node.Path.join([|Node.Process.cwd(), "./test/base"|]))
               )
           );
-          test(
-            "test copy base scripts",
-            () => {
-              Tester.copyBaseScript(wrongPerformanceTestData2);
-              Node.Fs.existsSync("./test/base/wd_base.js") |> expect == true
-            }
-          );
+          /* test(
+               "test copy base scripts",
+               () => {
+                 Tester.copyBaseScript(wrongPerformanceTestData2);
+                 Node.Fs.existsSync("./test/base/wd_base.js") |> expect == true
+               }
+             ); */
           testPromise(
             "generate base and target debug html files",
             () => {
@@ -79,7 +75,7 @@ let _ =
               WonderBsPuppeteer.PuppeteerUtils.launchHeadlessBrowser()
               |> then_(
                    (browser) =>
-                     [@bs] Comparer.compare(browser, wrongPerformanceTestData)
+                     Tester.compare(browser, wrongPerformanceTestData)
                      |> then_(
                           (failList) => {
                             GenerateDebug.generateHtmlFiles(
@@ -101,7 +97,7 @@ let _ =
                                     "./test/debug/basic1_pf_test1_base_debug.html"
                                   |])
                                 )
-                                |> Js.String.includes("../base/wd_base.js")
+                                |> Js.String.includes("../base/test/res/wd.js")
                               ),
                               (
                                 Node.Fs.existsSync(
@@ -150,7 +146,7 @@ let _ =
               WonderBsPuppeteer.PuppeteerUtils.launchHeadlessBrowser()
               |> then_(
                    (browser) =>
-                     [@bs] Comparer.compare(browser, wrongPerformanceTestData)
+                     Tester.compare(browser, wrongPerformanceTestData)
                      |> then_(
                           (failList) => {
                             GenerateDebug.generateHtmlFiles(

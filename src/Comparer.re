@@ -112,8 +112,13 @@ let getFailCaseText = (failList) =>
 let compare =
   [@bs]
   (
-    (browser, {commonData, testDataList} as performanceTestData) =>
-      Measure.measure(browser, commonData.execCountWhenTest, performanceTestData)
+    (browser, allScriptFilePathList, {commonData, testDataList} as performanceTestData) =>
+      Measure.measure(
+        browser,
+        commonData.execCountWhenTest,
+        allScriptFilePathList,
+        performanceTestData
+      )
       |> then_(
            (resultList: list((string, 'a))) =>
              resultList

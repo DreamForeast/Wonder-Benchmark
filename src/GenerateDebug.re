@@ -21,26 +21,28 @@ let generateHtmlFiles =
     (targetAbsoluteFileDir: string, {commonData} as performanceTestData, compareResultList) =>
   compareResultList
   |> List.iter(
-       ((_, (testName, {name, bodyFuncStr, scriptFilePathList}, _, _))) => {
+       ((_, (testName, {name, bodyFuncStr}, _, _))) => {
          GenerateDebugFileUtils.generate(
            targetAbsoluteFileDir,
            (
              testName,
              name,
-             ScriptFileUtils.getAllScriptFilePathList(
-               commonData.scriptFilePathList,
-               scriptFilePathList
-             ),
+             ScriptFileUtils.getAllScriptFilePathList(commonData),
              bodyFuncStr,
              _getType()
            )
          );
-         GenerateBaseDebugUtils.isGenerateBaseDebugData(performanceTestData) ?
-           GenerateBaseDebugUtils.generateBaseDebugFile(
-             targetAbsoluteFileDir,
-             (testName, name, scriptFilePathList, bodyFuncStr),
-             performanceTestData
-           ) :
-           ()
+         /* GenerateBaseDebugUtils.isGenerateBaseDebugData(performanceTestData) ?
+            GenerateBaseDebugUtils.generateBaseDebugFile(
+              targetAbsoluteFileDir,
+              (testName, name, scriptFilePathList, bodyFuncStr),
+              performanceTestData
+            ) :
+            () */
+         GenerateBaseDebugUtils.generateBaseDebugFile(
+           targetAbsoluteFileDir,
+           (testName, name, bodyFuncStr),
+           performanceTestData
+         )
        }
      );

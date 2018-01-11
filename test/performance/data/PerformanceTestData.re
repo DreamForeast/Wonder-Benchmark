@@ -1,6 +1,6 @@
 open PerformanceTestDataType;
 
-let commonData = {
+let commonData1 = {
   isClosePage: true,
   execCountWhenTest: 1,
   execCountWhenGenerateBenchmark: 2,
@@ -8,12 +8,36 @@ let commonData = {
   maxAllowDiffTimePercent: 5000,
   maxAllowDiffMemoryPercent: 5000,
   benchmarkPath: "./test/performance/benchmark/",
-  generateBaseDebugData: None,
-  scriptFilePathList: []
+  baseDir: "./test/base",
+  scriptFilePathList: [
+    "./test/res/BasicBoxesTool.js",
+    "./test/res/CameraTool.js",
+    "./test/res/wd.js",
+    "./test/res/script1.js",
+    "./test/res/script2.js"
+  ]
+};
+
+let commonData2 = {
+  isClosePage: true,
+  execCountWhenTest: 1,
+  execCountWhenGenerateBenchmark: 2,
+  compareCount: 3,
+  maxAllowDiffTimePercent: 5000,
+  maxAllowDiffMemoryPercent: 5000,
+  benchmarkPath: "./test/performance/benchmark/",
+  baseDir: "./test/base",
+  scriptFilePathList: [
+    "./test/res/BasicBoxesTool.js",
+    "./test/res/CameraTool.js",
+    "./test/res/wd.js",
+    "./test/res/script1.js",
+    "./test/res/script2.js"
+  ]
 };
 
 let correctPerformanceTestData = {
-  commonData,
+  commonData: commonData1,
   testDataList: [
     {
       name: "basic1",
@@ -70,8 +94,6 @@ var n4 = performance.now();
 return {"textArray": ["prepare", "init", "loopBody"], "timeArray": [n1, n2, n3, n4] }
             }
 |},
-          scriptFilePathList:
-            Some(["./test/res/BasicBoxesTool.js", "./test/res/CameraTool.js", "./test/res/wd.js"]),
           errorRate: 20
         },
         {
@@ -79,7 +101,7 @@ return {"textArray": ["prepare", "init", "loopBody"], "timeArray": [n1, n2, n3, 
           bodyFuncStr: {|function test(){
                         var arr = [];
                         for(var i = 0; i <= 100000; i++){
-                        arr[i] = minus(1, wd.add(1, 2));
+                        arr[i] = minus(1, testScript.add(1, 2));
                         }
                     }
 var n1 = performance.now();
@@ -102,7 +124,6 @@ var n4 = performance.now();
 
 return {"textArray": ["prepare", "init", "loopBody"], "timeArray": [n1, n2, n3, n4] }
 |},
-          scriptFilePathList: Some(["./test/res/script1.js", "./test/res/script2.js"]),
           errorRate: 50
         }
       ]
@@ -111,7 +132,7 @@ return {"textArray": ["prepare", "init", "loopBody"], "timeArray": [n1, n2, n3, 
 };
 
 let wrongPerformanceTestData = {
-  commonData,
+  commonData: commonData1,
   testDataList: [
     {
       name: "basic1",
@@ -168,8 +189,6 @@ var n4 = performance.now();
 return {"textArray": ["prepare", "init", "loopBody"], "timeArray": [n1, n2, n3, n4] }
             }
 |},
-          scriptFilePathList:
-            Some(["./test/res/BasicBoxesTool.js", "./test/res/CameraTool.js", "./test/res/wd.js"]),
           errorRate: 20
         },
         {
@@ -177,7 +196,7 @@ return {"textArray": ["prepare", "init", "loopBody"], "timeArray": [n1, n2, n3, 
           bodyFuncStr: {|function test(){
                         var arr = [];
                         for(var i = 0; i <= 100000; i++){
-                        arr[i] = minus(1, wd.add(1, 2));
+                        arr[i] = minus(1, testScript.add(1, 2));
                         }
                     }
 var n1 = performance.now();
@@ -200,7 +219,6 @@ var n4 = performance.now();
 
 return {"textArray": ["prepare", "init", "loopBody"], "timeArray": [n1, n2, n3, n4] }
 |},
-          scriptFilePathList: Some(["./test/res/script1.js", "./test/res/script2.js"]),
           errorRate: 50
         }
       ]
@@ -209,20 +227,7 @@ return {"textArray": ["prepare", "init", "loopBody"], "timeArray": [n1, n2, n3, 
 };
 
 let wrongPerformanceTestData2 = {
-  commonData: {
-    isClosePage: true,
-    execCountWhenTest: 1,
-    execCountWhenGenerateBenchmark: 2,
-    compareCount: 3,
-    maxAllowDiffTimePercent: 5000,
-    maxAllowDiffMemoryPercent: 5000,
-    benchmarkPath: "./test/performance/benchmark/",
-    generateBaseDebugData:
-      Some([
-        {sourceScriptFilePath: "./test/res/wd.js", targetScriptFilePath: "./test/base/wd_base.js"}
-      ]),
-    scriptFilePathList: []
-  },
+  commonData: commonData2,
   testDataList: [
     {
       name: "basic1",
@@ -279,8 +284,6 @@ var n4 = performance.now();
 return {"textArray": ["prepare", "init", "loopBody"], "timeArray": [n1, n2, n3, n4] }
             }
 |},
-          scriptFilePathList:
-            Some(["./test/res/BasicBoxesTool.js", "./test/res/CameraTool.js", "./test/res/wd.js"]),
           errorRate: 20
         },
         {
@@ -288,7 +291,7 @@ return {"textArray": ["prepare", "init", "loopBody"], "timeArray": [n1, n2, n3, 
           bodyFuncStr: {|function test(){
                         var arr = [];
                         for(var i = 0; i <= 10000; i++){
-                        arr[i] = minus(1, wd.add(1, 2));
+                        arr[i] = minus(1, testScript.add(1, 2));
                         }
                     }
 var n1 = performance.now();
@@ -310,8 +313,7 @@ var n4 = performance.now();
 
 
 return {"textArray": ["prepare", "init", "loopBody"], "timeArray": [n1, n2, n3, n4] }
-|},
-          scriptFilePathList: Some(["./test/res/script1.js", "./test/res/script2.js"]),
+  |},
           errorRate: 50
         }
       ]

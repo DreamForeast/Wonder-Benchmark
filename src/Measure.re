@@ -69,13 +69,8 @@ let _computePerformanceTime = (timeArr: array(float)) => {
      )
 };
 
-let _addScript = (commonScriptFilePathList, scriptFilePathList, promise) =>
-  (
-    switch scriptFilePathList {
-    | None => commonScriptFilePathList
-    | Some(scriptFilePathList) => scriptFilePathList @ commonScriptFilePathList
-    }
-  )
+let _addScript = (allScriptFilePathList, promise) =>
+  allScriptFilePathList
   |> List.fold_left(
        (promise, scriptFilePath) =>
          promise
@@ -103,16 +98,7 @@ let _execBodyFunc: string => bodyFuncReturnValue = [%bs.raw
 ];
 
 let _execFunc =
-    (
-      isClosePage,
-      commonScriptFilePathList,
-      name,
-      scriptFilePathList,
-      bodyFuncStr,
-      errorRate,
-      browser,
-      promise
-    ) =>
+    (isClosePage, allScriptFilePathList, name, bodyFuncStr, errorRate, browser, promise) =>
   promise
   |> then_(
        (resultData) =>
@@ -120,7 +106,7 @@ let _execFunc =
          |> WonderBsPuppeteer.Browser.newPage
          |> then_((page) => (page, resultData) |> resolve)
      )
-  |> _addScript(commonScriptFilePathList, scriptFilePathList)
+  |> _addScript(allScriptFilePathList)
   |> then_(
        ((page, resultData)) =>
          page
@@ -131,7 +117,12 @@ let _execFunc =
        ((page, resultData, data)) =>
          page
          |> Page.evaluateWithArg([@bs] _execBodyFunc, bodyFuncStr)
-         |> then_((timeData: bodyFuncReturnValue) => resolve((page, resultData, data, timeData)))
+         |> then_(
+              (timeData: bodyFuncReturnValue) => {
+                WonderCommonlib.DebugUtils.log("finish") |> ignore;
+                resolve((page, resultData, data, timeData))
+              }
+            )
      )
   |> then_(
        ((page, resultData, lastData, timeData)) =>
@@ -168,29 +159,12 @@ let _execFunc =
      );
 
 let _execSpecificCount =
-    (
-      isClosePage,
-      execCount,
-      commonScriptFilePathList,
-      name,
-      scriptFilePathList,
-      bodyFuncStr,
-      errorRate,
-      browser
-    ) =>
+    (isClosePage, execCount, allScriptFilePathList, name, bodyFuncStr, errorRate, browser) =>
   WonderCommonlib.ArraySystem.range(0, execCount - 1)
   |> Js.Array.reduce(
        (promise, _) =>
          promise
-         |> _execFunc(
-              isClosePage,
-              commonScriptFilePathList,
-              name,
-              scriptFilePathList,
-              bodyFuncStr,
-              errorRate,
-              browser
-            ),
+         |> _execFunc(isClosePage, allScriptFilePathList, name, bodyFuncStr, errorRate, browser),
        ([], []) |> resolve
      );
 
@@ -220,9 +194,8 @@ let _exec =
     (
       isClosePage,
       execCount,
-      commonScriptFilePathList,
+      allScriptFilePathList,
       name,
-      scriptFilePathList,
       bodyFuncStr,
       errorRate,
       case,
@@ -236,9 +209,8 @@ let _exec =
          |> _execSpecificCount(
               isClosePage,
               execCount,
-              commonScriptFilePathList,
+              allScriptFilePathList,
               name,
-              scriptFilePathList,
               bodyFuncStr,
               errorRate
             )
@@ -250,8 +222,39 @@ let _exec =
          |> then_((data) => [data, ...resultList] |> resolve)
      );
 
-let measure = (browser, execCount, {commonData, testDataList}) => {
-  let {isClosePage, scriptFilePathList: commonScriptFilePathList} = commonData;
+let measureCase =
+    (
+      browser,
+      execCount,
+      allScriptFilePathList,
+      commonData,
+      testName,
+      {name: caseName, bodyFuncStr, errorRate} as case,
+      promise
+    ) => {
+  let {isClosePage} = commonData;
+  promise
+  |> then_(
+       (resultList) => {
+         let title = PerformanceTestDataUtils.buildCaseTitle(testName, caseName);
+         WonderCommonlib.DebugUtils.log({j|measure $(title)...|j}) |> ignore;
+         resultList |> resolve
+       }
+     )
+  |> _exec(
+       isClosePage,
+       execCount,
+       allScriptFilePathList,
+       caseName,
+       bodyFuncStr,
+       errorRate,
+       case,
+       browser
+     )
+};
+
+let measure = (browser, execCount, allScriptFilePathList, {commonData, testDataList}) => {
+  let {execCountWhenTest, isClosePage} = commonData;
   testDataList
   |> List.fold_left(
        (promise, {name: testName, caseList}) =>
@@ -260,29 +263,15 @@ let measure = (browser, execCount, {commonData, testDataList}) => {
               (resultTestList) =>
                 caseList
                 |> List.fold_left(
-                     (
-                       promise,
-                       {name: caseName, bodyFuncStr, scriptFilePathList, errorRate} as case
-                     ) =>
+                     (promise, {name: caseName, bodyFuncStr, errorRate} as case) =>
                        promise
-                       |> then_(
-                            (resultList) => {
-                              let title =
-                                PerformanceTestDataUtils.buildCaseTitle(testName, caseName);
-                              WonderCommonlib.DebugUtils.log({j|measure $(title)...|j}) |> ignore;
-                              resultList |> resolve
-                            }
-                          )
-                       |> _exec(
-                            isClosePage,
+                       |> measureCase(
+                            browser,
                             execCount,
-                            commonScriptFilePathList,
-                            caseName,
-                            scriptFilePathList,
-                            bodyFuncStr,
-                            errorRate,
-                            case,
-                            browser
+                            allScriptFilePathList,
+                            commonData,
+                            testName,
+                            case
                           ),
                      [] |> resolve
                    )

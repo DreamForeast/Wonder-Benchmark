@@ -23,7 +23,7 @@ let _ =
             WonderBsPuppeteer.PuppeteerUtils.launchHeadlessBrowser()
             |> then_(
                  (browser) =>
-                   GenerateBenchmark.generate(browser, correctPerformanceTestData)
+                   Tester.generateBenchmarkWithBrowser(browser, correctPerformanceTestData)
                    |> then_(
                         (_) =>
                           Fs.existsSync("./test/performance/benchmark/basic1.json")

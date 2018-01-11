@@ -13,13 +13,11 @@ let _ =
       open PerformanceTestData;
       afterEach(
         () =>
-          GenerateReport.removeFile(Node.Path.join([|Node.Process.cwd(), "./test/report/report.html"|]))
+          GenerateReport.removeFile(
+            Node.Path.join([|Node.Process.cwd(), "./test/report/report.html"|])
+          )
       );
-      beforeAllPromise(
-        () =>
-          WonderBsPuppeteer.PuppeteerUtils.launchHeadlessBrowser()
-          |> then_((browser) => GenerateBenchmark.generate(browser, correctPerformanceTestData))
-      );
+      beforeAllPromise(() => Tester.generateBenchmark(correctPerformanceTestData));
       testPromise(
         "generate report html file and css file",
         () => {
@@ -27,7 +25,7 @@ let _ =
           WonderBsPuppeteer.PuppeteerUtils.launchHeadlessBrowser()
           |> then_(
                (browser) =>
-                 [@bs] Comparer.compare(browser, wrongPerformanceTestData)
+                 Tester.compare(browser, wrongPerformanceTestData)
                  |> then_(
                       (compareResultData) => {
                         Tester.generateReport(
@@ -55,7 +53,7 @@ let _ =
           WonderBsPuppeteer.PuppeteerUtils.launchHeadlessBrowser()
           |> then_(
                (browser) =>
-                 [@bs] Comparer.compare(browser, wrongPerformanceTestData2)
+                 Tester.compare(browser, wrongPerformanceTestData2)
                  |> then_(
                       (compareResultData) => {
                         Tester.generateReport(

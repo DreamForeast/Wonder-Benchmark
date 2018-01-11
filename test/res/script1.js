@@ -1,4 +1,4 @@
-var wd = {
+var testScript = {
     add: (a, b) => {
         a + b
     }

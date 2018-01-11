@@ -13,58 +13,42 @@ let _buildFailCaseListHtmlStr = (targetAbsoluteFilePath, compareResultList, perf
   compareResultList
   |> Comparer.getFailCaseText
   |> List.fold_left(
-       (resultStr, (testName, caseName, text)) =>
-         GenerateBaseDebugUtils.isGenerateBaseDebugData(performanceTestData) ?
-           {
-             let targetDebugFilePath =
-               "./" ++ GenerateDebug.buildDebugHtmlFileName(testName, caseName);
-             let baseDebugFilePath =
-               "./" ++ GenerateBaseDebugUtils.buildDebugHtmlFileName(testName, caseName);
-             let title = PerformanceTestDataUtils.buildCaseTitle(testName, caseName);
-             let htmlText = text |> Js.String.replaceByRe([%re {|/\n/g|}], "<br/>");
-             resultStr
-             ++ {j|<section>
+       (resultStr, (testName, caseName, text)) => {
+         /* GenerateBaseDebugUtils.isGenerateBaseDebugData(performanceTestData) ? */
+         let targetDebugFilePath =
+           "./" ++ GenerateDebug.buildDebugHtmlFileName(testName, caseName);
+         let baseDebugFilePath =
+           "./" ++ GenerateBaseDebugUtils.buildDebugHtmlFileName(testName, caseName);
+         let title = PerformanceTestDataUtils.buildCaseTitle(testName, caseName);
+         let htmlText = text |> Js.String.replaceByRe([%re {|/\n/g|}], "<br/>");
+         resultStr
+         ++ {j|<section>
                     <h3>$title</h3>
                     <a href="$baseDebugFilePath" target="_blank"><h4>baseDebug</h4></a>
                     <a href="$targetDebugFilePath" target="_blank"><h4>targetDebug</h4></a>
                     <p>$htmlText</p>
                 </section>
                     |j}
-           } :
-           {
-             let targetDebugFilePath =
-               "./" ++ GenerateDebug.buildDebugHtmlFileName(testName, caseName);
-             let title = PerformanceTestDataUtils.buildCaseTitle(testName, caseName);
-             let htmlText = text |> Js.String.replaceByRe([%re {|/\n/g|}], "<br/>");
-             resultStr
-             ++ {j|<section>
-                    <a href="$targetDebugFilePath" target="_blank"><h3>$title</h3></a>
-                    <p>$htmlText</p>
-                </section>
-                    |j}
-           },
+       },
+       /* {
+            let targetDebugFilePath =
+              "./" ++ GenerateDebug.buildDebugHtmlFileName(testName, caseName);
+            let title = PerformanceTestDataUtils.buildCaseTitle(testName, caseName);
+            let htmlText = text |> Js.String.replaceByRe([%re {|/\n/g|}], "<br/>");
+            resultStr
+            ++ {j|<section>
+                   <a href="$targetDebugFilePath" target="_blank"><h3>$title</h3></a>
+                   <p>$htmlText</p>
+               </section>
+                   |j}
+          }, */
        ""
      );
 
 let _generateCssFile = (filePath) => {||} |> WonderCommonlib.NodeExtend.writeFile(filePath);
 
-let _getAllScriptFilePathList = (testDataList) =>
-  Some(
-    testDataList
-    |> List.fold_left(
-         (resultList, {caseList}) =>
-           caseList
-           |> List.fold_left(
-                (resultList, {scriptFilePathList}: case) =>
-                  switch scriptFilePathList {
-                  | None => resultList
-                  | Some(scriptFilePathList) => resultList @ scriptFilePathList
-                  },
-                resultList
-              ),
-         []
-       )
-  );
+let _getAllScriptFilePathList = (commonData) =>
+  ScriptFileUtils.getAllScriptFilePathList(commonData);
 
 let removeFile = (reportFilePath) =>
   Fs.existsSync(reportFilePath) ?
@@ -80,10 +64,7 @@ let generateHtmlFile =
     ++ "\n<body>\n"
     ++ GenerateHtmlFile.buildImportScriptStr(
          targetAbsoluteFilePath,
-         ScriptFileUtils.getAllScriptFilePathList(
-           commonData.scriptFilePathList,
-           _getAllScriptFilePathList(testDataList)
-         )
+         ScriptFileUtils.getAllScriptFilePathList(commonData)
        )
     ++ _buildFailCaseListHtmlStr(targetAbsoluteFilePath, compareResultList, performanceTestData)
     ++ GenerateHtmlFile.buildFootStr();

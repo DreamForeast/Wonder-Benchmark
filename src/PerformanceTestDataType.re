@@ -1,15 +1,19 @@
 type case = {
   name: string,
   bodyFuncStr: string,
-  scriptFilePathList: option(list(string)),
   errorRate: int
 };
 
-type copiedScriptData = {
-  sourceScriptFilePath: string,
-  targetScriptFilePath: string
-};
-
+/*
+ type copiedScriptData = {
+   sourceScriptFilePath: string,
+   targetScriptFilePath: string
+ }; */
+/* type reCompare = {
+     compareCount: int,
+     /* execCountWhenTest: int,
+     execCountWhenGenerateBenchmark: int */
+   }; */
 type commonData = {
   isClosePage: bool,
   execCountWhenTest: int,
@@ -19,7 +23,8 @@ type commonData = {
   maxAllowDiffMemoryPercent: int,
   benchmarkPath: string,
   /* copiedScriptDataListWhenGenerateBenchmark: option(list(copiedScriptData)), */
-  generateBaseDebugData: option(list(copiedScriptData)),
+  /* generateBaseDebugData: option(list(copiedScriptData)), */
+  baseDir: string,
   /* generateBaseDebugData: option(Js.Dict.t(string)), */
   scriptFilePathList: list(string)
 };

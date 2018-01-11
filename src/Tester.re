@@ -4,11 +4,26 @@ open Js.Promise;
 
 let generateBenchmark = (performanceTestData) =>
   WonderBsPuppeteer.PuppeteerUtils.launchHeadlessBrowser()
-  |> then_((browser) => GenerateBenchmark.generate(browser, performanceTestData));
+  |> then_(
+       (browser) =>
+         GenerateBenchmark.generate(
+           browser,
+           ScriptFileUtils.getAllScriptFilePathList(performanceTestData.commonData),
+           performanceTestData
+         )
+     );
+
+let generateBenchmarkWithBrowser = (browser, performanceTestData) =>
+  GenerateBenchmark.generate(
+    browser,
+    ScriptFileUtils.getAllScriptFilePathList(performanceTestData.commonData),
+    performanceTestData
+  );
 
 let copyBaseScript = (performanceTestData) =>
-  GenerateBaseDebugUtils.isGenerateBaseDebugData(performanceTestData) ?
-    GenerateBaseDebugUtils.copyBaseScript(performanceTestData) : ();
+  /* GenerateBaseDebugUtils.isGenerateBaseDebugData(performanceTestData) ?
+     GenerateBaseDebugUtils.copyBaseScript(performanceTestData) : (); */
+  GenerateBaseDebugUtils.copyBaseScript(performanceTestData);
 
 let generateReport = (reportFilePath, failList, performanceTestData) =>
   make(
@@ -23,6 +38,14 @@ let generateReport = (reportFilePath, failList, performanceTestData) =>
         )
       )
     }
+  );
+
+let compare = (browser, {commonData, testDataList} as performanceTestData) =>
+  [@bs]
+  Comparer.compare(
+    browser,
+    ScriptFileUtils.getAllScriptFilePathList(commonData),
+    performanceTestData
   );
 
 /* let generateReport = (reportFilePath, compareResultData) =>
@@ -77,21 +100,38 @@ let _buildPerformanceTestDataFromFailList = (commonData, failList) => {
   }
 };
 
-let _compareSpecificCount = (browser, count, compareFunc, performanceTestData) => {
+let _compareSpecificCount =
+    (
+      browser,
+      compareCount,
+      allTargetScriptFilePathList,
+      allBaseScriptFilePathList,
+      compareFunc,
+      generateCaseFunc,
+      performanceTestData
+    ) => {
+  /* WonderCommonlib.DebugUtils.log(1111) |> ignore; */
+  /* WonderCommonlib.DebugUtils.logJson((
+       allTargetScriptFilePathList,
+       allBaseScriptFilePathList
+     ))
+     |> ignore; */
   let rec _compare =
           (
             browser,
-            count,
+            compareCount,
+            allTargetScriptFilePathList,
+            allBaseScriptFilePathList,
             {commonData} as performanceTestData,
             needReCompareFailList,
             resultFailList
           ) =>
-    switch count {
-    | count when count === 0 => resultFailList @ needReCompareFailList |> resolve
+    switch compareCount {
+    | count when compareCount === 0 => resultFailList @ needReCompareFailList |> resolve
     | _ =>
       WonderCommonlib.DebugUtils.log("compare...") |> ignore;
-      let {maxAllowDiffTimePercent, maxAllowDiffMemoryPercent} = commonData;
-      [@bs] compareFunc(browser, performanceTestData)
+      let {execCountWhenGenerateBenchmark, maxAllowDiffTimePercent, maxAllowDiffMemoryPercent} = commonData;
+      [@bs] compareFunc(browser, allTargetScriptFilePathList, performanceTestData)
       |> then_(
            (failList) =>
              Comparer.isPass(failList) ?
@@ -140,18 +180,52 @@ let _compareSpecificCount = (browser, count, compareFunc, performanceTestData) =
                        |> ignore
                      } :
                      ();
-                   _compare(
-                     browser,
-                     count - 1,
-                     _buildPerformanceTestDataFromFailList(commonData, needReCompareFailList),
-                     needReCompareFailList,
-                     resultFailList @ notNeedReCompareFailList
-                   )
+                   needReCompareFailList
+                   |> List.fold_left(
+                        (promise, (_, (testName, case, _, _))) =>
+                          promise
+                          |> then_(
+                               (browser) =>
+                                 [@bs]
+                                 generateCaseFunc(
+                                   browser,
+                                   execCountWhenGenerateBenchmark,
+                                   allBaseScriptFilePathList,
+                                   commonData,
+                                   testName,
+                                   case
+                                 )
+                             ),
+                        browser |> resolve
+                      )
+                   |> then_(
+                        (browser) =>
+                          _compare(
+                            browser,
+                            compareCount - 1,
+                            allTargetScriptFilePathList,
+                            allBaseScriptFilePathList,
+                            _buildPerformanceTestDataFromFailList(
+                              commonData,
+                              needReCompareFailList
+                            ),
+                            needReCompareFailList,
+                            resultFailList @ notNeedReCompareFailList
+                          )
+                      )
                  }
                }
          )
     };
-  _compare(browser, count, performanceTestData, [], [])
+  _compare(
+    browser,
+    compareCount,
+    allTargetScriptFilePathList,
+    allBaseScriptFilePathList,
+    performanceTestData,
+    [],
+    []
+  )
 };
 
 let runTest = (browserArr, {commonData} as performanceTestData) =>
@@ -164,7 +238,14 @@ let runTest = (browserArr, {commonData} as performanceTestData) =>
   |> then_(
        (browser) =>
          performanceTestData
-         |> _compareSpecificCount(browser, commonData.compareCount, Comparer.compare)
+         |> _compareSpecificCount(
+              browser,
+              commonData.compareCount,
+              ScriptFileUtils.getAllScriptFilePathList(commonData),
+              GenerateBaseDebugUtils.getAllScriptFilePathList(performanceTestData),
+              Comparer.compare,
+              GenerateBenchmark.generateCase
+            )
          |> then_(
               (data) =>
                 WonderBsPuppeteer.PuppeteerUtils.closeBrowser(browser)
@@ -176,4 +257,4 @@ let runTest = (browserArr, {commonData} as performanceTestData) =>
                   failList |> resolve :
                   (Comparer.getFailText(failList), failList) |> Obj.magic |> reject
             )
-     ) /* failList |> resolve */;
+     );
