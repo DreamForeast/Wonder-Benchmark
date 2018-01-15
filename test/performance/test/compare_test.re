@@ -93,8 +93,86 @@ let _ =
                 errorRate
               };
               let _buildFailList =
-                  (testTitle, testName, case, diffTimePercentList, diffMemory, failList) =>
-                failList @ [(testTitle, (testName, case, diffTimePercentList, diffMemory))];
+                  (
+                    testTitle,
+                    testName,
+                    case,
+                    diffTimePercentList,
+                    passedTimeList,
+                    diffMemory,
+                    failList
+                  ) =>
+                failList
+                @ [(testTitle, (testName, case, diffTimePercentList, passedTimeList, diffMemory))];
+              /* describe(
+                   "if one item of timeList is already passed in previouse compare, not compare it in the later compare ",
+                   () => {
+                     let _prepare = () => {
+                       let failCase1 = _buildFailCase(~name="case1", ());
+                       let failCase2 = _buildFailCase(~name="case2", ());
+                       let failList =
+                         []
+                         |> _buildFailList(
+                              "test1_title1",
+                              "test1",
+                              failCase1,
+                              [wrongPerformanceTestData.commonData.maxAllowDiffTimePercent - 1],
+                              [true],
+                              1
+                            )
+                         |> _buildFailList(
+                              "test1_title1",
+                              "test2",
+                              failCase2,
+                              [wrongPerformanceTestData.commonData.maxAllowDiffTimePercent - 1],
+                              [false],
+                              1
+                            );
+                       (failCase1, failCase2, failList)
+                     };
+                     let _buildTestData = (baseDir, scriptFilePathList, performanceTestData) => {
+                       ...performanceTestData,
+                       commonData: {...performanceTestData.commonData, scriptFilePathList, baseDir}
+                     };
+                     testPromise(
+                       "test",
+                       () => {
+                         let (_, _, failList) = _prepare();
+                         let _fakeCompare = createEmptyStubWithJsObjSandbox(sandbox);
+                         _fakeCompare
+                         |> onCall(0)
+                         |> returns(make((~resolve, ~reject) => [@bs] resolve(failList)));
+                         _fakeCompare
+                         |> onCall(1)
+                         |> returns(make((~resolve, ~reject) => [@bs] resolve([])));
+                         let _fakeGenerateCaseBenchmark = createEmptyStubWithJsObjSandbox(sandbox);
+
+
+
+
+
+                         TesterTool.compareSpecificCount(
+                           Obj.magic(1),
+                           2,
+                           _fakeCompare,
+                           _fakeGenerateCaseBenchmark,
+                           _buildTestData(
+                             "./test/base",
+                             ["./test/res/a.js", "./test/res/aaa/b.js"],
+                             wrongPerformanceTestData
+                           )
+                         )
+                         |> then_(
+                              (resultFailList) =>
+                                List.nth(_fakeGenerateCaseBenchmark |> getCall(0) |> getArgs, 2)
+                                |>
+                                expect == ["test/base/test/res/a.js", "test/base/test/res/aaa/b.js"]
+                                |> resolve
+                            )
+                       }
+                     )
+                   }
+                 ); */
               describe(
                 "compare at most 3 times",
                 () =>
@@ -146,18 +224,18 @@ let _ =
                                      "./test/base/test/res/script1.js",
                                      {|
 
-var testScript = {
-    add: (a, b) => {
-      var sum = 0;
-      for(var i = 0; i < 10000; i++){
+                 var testScript = {
+                     add: (a, b) => {
+                       var sum = 0;
+                       for(var i = 0; i < 10000; i++){
 
-        sum = sum+ ( a + b );
-      }
+                         sum = sum+ ( a + b );
+                       }
 
-      return sum;
-    }
-}
-    |}
+                       return sum;
+                     }
+                 }
+                     |}
                                    );
                                  _setFakeBaseScript();
                                  Tester.runTest([|browser|], wrongPerformanceTestData3)
@@ -194,6 +272,7 @@ var testScript = {
                            "test1",
                            failCase1,
                            [wrongPerformanceTestData.commonData.maxAllowDiffTimePercent],
+                           [false],
                            1
                          )
                       |> _buildFailList(
@@ -201,6 +280,7 @@ var testScript = {
                            "test2",
                            failCase2,
                            [wrongPerformanceTestData.commonData.maxAllowDiffTimePercent - 1],
+                           [false],
                            1
                          );
                     (failCase1, failCase2, failList)
@@ -248,30 +328,30 @@ var testScript = {
                       WonderCommonlib.NodeExtend.writeFile(
                         benchmarkFilePath,
                         {|
-{
-  "name": "test.json",
-  "cases": [
-    {
-      "name": "case1",
-      "timestamp": 112,
-      "time_detail": [
-        {"name": "loopBody", "time": 25}
-      ],
-      "memory": 2,
-      "error_rate": 10
-    },
-    {
-      "name": "case2",
-      "timestamp": 5,
-      "time_detail": [
-        {"name": "loopBody", "time": 10}
-      ],
-      "memory": 5,
-      "error_rate": 5
-    }
-    ]
-  }
-                        |}
+                 {
+                   "name": "test.json",
+                   "cases": [
+                     {
+                       "name": "case1",
+                       "timestamp": 112,
+                       "time_detail": [
+                         {"name": "loopBody", "time": 25}
+                       ],
+                       "memory": 2,
+                       "error_rate": 10
+                     },
+                     {
+                       "name": "case2",
+                       "timestamp": 5,
+                       "time_detail": [
+                         {"name": "loopBody", "time": 10}
+                       ],
+                       "memory": 5,
+                       "error_rate": 5
+                     }
+                     ]
+                   }
+                                         |}
                       );
                       GenerateBenchmarkTool.changeCaseBenchmark(
                         "./test/benchmark/",
@@ -283,30 +363,30 @@ var testScript = {
                       |>
                       expect == (
                                   {|
-                        {
-                          "name": "test.json",
-                          "cases": [
-                            {
-                                "name": "case1",
-                                "timestamp":112,
-                                "time_detail": [
-                                    {"name":"loopBody","time":25}
-                                ],
-                                "memory": 2,
-                                "error_rate": 10
-                            },
+                                         {
+                                           "name": "test.json",
+                                           "cases": [
+                                             {
+                                                 "name": "case1",
+                                                 "timestamp":112,
+                                                 "time_detail": [
+                                                     {"name":"loopBody","time":25}
+                                                 ],
+                                                 "memory": 2,
+                                                 "error_rate": 10
+                                             },
 
-                            {
-                                "name": "case2",
-                                "timestamp":2,
-                                "time_detail": [
-                                    {"name":"loopBody","time":3}
-                                ],
-                                "memory": 4,
-                                "error_rate": 1
-                            }]
-                          }
-  |}
+                                             {
+                                                 "name": "case2",
+                                                 "timestamp":2,
+                                                 "time_detail": [
+                                                     {"name":"loopBody","time":3}
+                                                 ],
+                                                 "memory": 4,
+                                                 "error_rate": 1
+                                             }]
+                                           }
+                   |}
                                   |> Js.Json.parseExn
                                 )
                     }
@@ -354,7 +434,7 @@ var testScript = {
                            (
                              resultFailList,
                              (
-                               List.nth(_fakeCompare |> getCall(1) |> getArgs, 2).testDataList
+                               List.nth(_fakeCompare |> getCall(1) |> getArgs, 3).testDataList
                                |> List.hd
                              ).
                                name
@@ -376,6 +456,7 @@ var testScript = {
                                "test1",
                                failCase1,
                                [wrongPerformanceTestData.commonData.maxAllowDiffTimePercent],
+                               [false],
                                1
                              )
                           |> _buildFailList(
@@ -383,6 +464,7 @@ var testScript = {
                                "test2",
                                failCase2,
                                [wrongPerformanceTestData.commonData.maxAllowDiffTimePercent - 1],
+                               [false],
                                1
                              );
                         (failCase1, failCase2, failList)
@@ -404,6 +486,7 @@ var testScript = {
                                "test1",
                                failCase1,
                                [1],
+                               [false],
                                wrongPerformanceTestData.commonData.maxAllowDiffMemoryPercent
                              )
                           |> _buildFailList(
@@ -411,6 +494,7 @@ var testScript = {
                                "test2",
                                failCase2,
                                [1],
+                               [false],
                                wrongPerformanceTestData.commonData.maxAllowDiffMemoryPercent - 1
                              );
                         (failCase1, failCase2, failList)
@@ -429,7 +513,7 @@ var testScript = {
                     () => {
                       let failCase1 = _buildFailCase(~name="case1", ());
                       let failList =
-                        [] |> _buildFailList("test1_title1", "test1", failCase1, [1], 1);
+                        [] |> _buildFailList("test1_title1", "test1", failCase1, [1], [false], 1);
                       let data =
                         TesterTool.buildPerformanceTestDataFromFailList(
                           wrongPerformanceTestData.commonData,
@@ -450,8 +534,8 @@ var testScript = {
                       let failCase2 = _buildFailCase(~name="case2", ());
                       let failList =
                         []
-                        |> _buildFailList("test1_title1", "test1", failCase1, [1], 1)
-                        |> _buildFailList("test1_title2", "test1", failCase2, [1], 1);
+                        |> _buildFailList("test1_title1", "test1", failCase1, [1], [false], 1)
+                        |> _buildFailList("test1_title2", "test1", failCase2, [1], [false], 1);
                       let data =
                         TesterTool.buildPerformanceTestDataFromFailList(
                           wrongPerformanceTestData.commonData,
@@ -474,10 +558,10 @@ var testScript = {
                       let failCase4 = _buildFailCase(~name="case4", ());
                       let failList =
                         []
-                        |> _buildFailList("test1_title1", "test1", failCase1, [1], 1)
-                        |> _buildFailList("test2_title1", "test2", failCase2, [1], 1)
-                        |> _buildFailList("test2_title2", "test2", failCase3, [1], 1)
-                        |> _buildFailList("test3_title1", "test3", failCase4, [1], 1);
+                        |> _buildFailList("test1_title1", "test1", failCase1, [1], [false], 1)
+                        |> _buildFailList("test2_title1", "test2", failCase2, [1], [false], 1)
+                        |> _buildFailList("test2_title2", "test2", failCase3, [1], [false], 1)
+                        |> _buildFailList("test3_title1", "test3", failCase4, [1], [false], 1);
                       let data =
                         TesterTool.buildPerformanceTestDataFromFailList(
                           wrongPerformanceTestData.commonData,

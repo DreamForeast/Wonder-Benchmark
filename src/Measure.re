@@ -117,11 +117,7 @@ let _execFunc =
        ((page, resultData, data)) =>
          page
          |> Page.evaluateWithArg([@bs] _execBodyFunc, bodyFuncStr)
-         |> then_(
-              (timeData: bodyFuncReturnValue) => {
-                resolve((page, resultData, data, timeData))
-              }
-            )
+         |> then_((timeData: bodyFuncReturnValue) => resolve((page, resultData, data, timeData)))
      )
   |> then_(
        ((page, resultData, lastData, timeData)) =>

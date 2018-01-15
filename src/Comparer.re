@@ -50,7 +50,8 @@ let _getDiffPercent = (actualValue, targetValue) => {
   }
 };
 
-let _compareMemory = (actualMemory, benchmarkMemory, errorRate, (failMessage, diffTimePercentList)) => {
+let _compareMemory =
+    (actualMemory, benchmarkMemory, errorRate, (failMessage, diffTimePercentList, passedTimeList)) => {
   let (minMemory, maxMemory) as rangeData = _getRange(benchmarkMemory, errorRate);
   switch (_isInRange(actualMemory, rangeData)) {
   | false =>
@@ -60,32 +61,55 @@ let _compareMemory = (actualMemory, benchmarkMemory, errorRate, (failMessage, di
       failMessage
       ++ {j|expect memory to in [$minMemory, $maxMemory], but actual is $actualMemory. the diff is $diffStr\n|j},
       diffTimePercentList,
+      passedTimeList,
       diff
     )
-  | true => (failMessage, diffTimePercentList, 0)
+  | true => (failMessage, diffTimePercentList, passedTimeList, 0)
   }
 };
 
-let _compareTime = (actualTimeList, actualTimeTextList, benchmarkTimeList, errorRate, failMessage) =>
+let _isTimePassed = (passedTimeList, index) =>
+  switch passedTimeList {
+  | None => false
+  | Some(passedTimeList) => List.nth(passedTimeList, index)
+  };
+
+let _compareTime =
+    (
+      actualTimeList: list(int),
+      actualTimeTextList,
+      benchmarkTimeList,
+      passedTimeList,
+      errorRate,
+      failMessage
+    ) => {
+  let index = ref((-1));
   List.fold_left2(
-    ((failMessage, diffList), (actualTime, actualTimeText), benchmarkTime) => {
-      let (minTime, maxTime) = _getRange(benchmarkTime, errorRate);
-      switch (_isInRange(actualTime, (minTime, maxTime))) {
-      | false =>
-        let diff = _getDiffPercent(actualTime, benchmarkTime);
-        let diffStr = _getDiffPercentStr(diff);
-        (
-          failMessage
-          ++ {j|expect time:$actualTimeText to in [$minTime, $maxTime], but actual is $actualTime. the diff is $diffStr\n|j},
-          diffList @ [diff]
-        )
-      | true => (failMessage, diffList)
-      }
+    ((failMessage, diffList, newPassedTimeList), (actualTime, actualTimeText), benchmarkTime) => {
+      index := index^ + 1;
+      _isTimePassed(passedTimeList, index^) ?
+        (failMessage, diffList, [true, ...newPassedTimeList]) :
+        {
+          let (minTime, maxTime) = _getRange(benchmarkTime, errorRate);
+          switch (_isInRange(actualTime, (minTime, maxTime))) {
+          | false =>
+            let diff = _getDiffPercent(actualTime, benchmarkTime);
+            let diffStr = _getDiffPercentStr(diff);
+            (
+              failMessage
+              ++ {j|expect time:$actualTimeText to in [$minTime, $maxTime], but actual is $actualTime. the diff is $diffStr\n|j},
+              diffList @ [diff],
+              [false, ...newPassedTimeList]
+            )
+          | true => (failMessage, diffList, [true, ...newPassedTimeList])
+          }
+        }
     },
-    (failMessage, []),
+    (failMessage, [], []),
     List.combine(actualTimeList, actualTimeTextList),
     benchmarkTimeList
-  );
+  )
+};
 
 let _isFail = (failMessage) => failMessage |> Js.String.length > 0;
 
@@ -94,19 +118,34 @@ let isPass = (failList) => failList |> List.length === 0;
 let getFailText = (failList) =>
   failList
   |> List.fold_left(
-       (text, (failMessage, (testName, {name}: case, _, _))) =>
+       (text, (failMessage, (testName, {name}: case, _, _, _))) =>
          text ++ PerformanceTestDataUtils.buildCaseTitle(testName, name) ++ failMessage,
        ""
      );
 
 let getFailCaseText = (failList) =>
   failList
-  |> List.map(((failMessage, (testName, {name}: case, _, _))) => (testName, name, failMessage));
+  |> List.map(((failMessage, (testName, {name}: case, _, _, _))) => (testName, name, failMessage));
+
+let _getPassedTimeList = (passedTimeListMap, testName, caseName) : option(list(bool)) =>
+  switch (passedTimeListMap |> WonderCommonlib.HashMapSystem.get(testName)) {
+  | None => None
+  | Some(map) =>
+    switch (map |> WonderCommonlib.HashMapSystem.get(caseName)) {
+    | None => None
+    | Some(timeList) => Some(timeList)
+    }
+  };
 
 let compare =
   [@bs]
   (
-    (browser, allScriptFilePathList, {commonData, testDataList} as performanceTestData) =>
+    (
+      browser,
+      allScriptFilePathList,
+      passedTimeListMap,
+      {commonData, testDataList} as performanceTestData
+    ) =>
       Measure.measure(
         browser,
         commonData.execCountWhenTest,
@@ -118,7 +157,9 @@ let compare =
              resultList
              |> List.fold_left(
                   (compareResultList, (actualTestName, actualResultCaseList)) =>
-                    switch (GenerateBenchmark.getBenchmarkData(actualTestName, commonData.benchmarkPath)) {
+                    switch (
+                      GenerateBenchmark.getBenchmarkData(actualTestName, commonData.benchmarkPath)
+                    ) {
                     | (benchmarkTestName, _) when benchmarkTestName !== actualTestName =>
                       ExceptionHandleSystem.throwMessage(
                         {j|benchmarkTestName:$benchmarkTestName should === actualTestName:$actualTestName|j}
@@ -160,11 +201,21 @@ let compare =
                                        actualTimeList,
                                        actualTimeTextList,
                                        benchmarkTimeList,
+                                       _getPassedTimeList(
+                                         passedTimeListMap,
+                                         actualTestName,
+                                         actualCaseName
+                                       ),
                                        actualErrorRate
                                      )
                                   |> _compareMemory(actualMemory, benchmarkMemory, actualErrorRate)
                                 ) {
-                                | (failMessage, diffTimePercentList, diffMemoryPercent)
+                                | (
+                                    failMessage,
+                                    diffTimePercentList,
+                                    passedTimeList,
+                                    diffMemoryPercent
+                                  )
                                     when _isFail(failMessage) => [
                                     (
                                       /* PerformanceTestDataUtils.buildCaseTitle(
@@ -177,6 +228,7 @@ let compare =
                                         actualTestName,
                                         actualCase,
                                         diffTimePercentList,
+                                        passedTimeList,
                                         diffMemoryPercent
                                       )
                                     ),

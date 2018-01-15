@@ -21,7 +21,7 @@ let generateHtmlFiles =
     (targetAbsoluteFileDir: string, {commonData} as performanceTestData, compareResultList) =>
   compareResultList
   |> List.iter(
-       ((_, (testName, {name, bodyFuncStr}, _, _))) => {
+       ((_, (testName, {name, bodyFuncStr}, _, _, _))) => {
          GenerateDebugFileUtils.generate(
            targetAbsoluteFileDir,
            (

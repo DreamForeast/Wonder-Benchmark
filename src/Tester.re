@@ -42,11 +42,12 @@ let generateReport = (reportFilePath, failList, performanceTestData) =>
 
 let compare = (browser, {commonData, testDataList} as performanceTestData) =>
   [@bs]
-  Comparer.compare(
-    browser,
-    ScriptFileUtils.getAllScriptFilePathList(commonData),
-    performanceTestData
-  );
+     Comparer.compare(
+       browser,
+       ScriptFileUtils.getAllScriptFilePathList(commonData),
+       WonderCommonlib.HashMapSystem.createEmpty(),
+       performanceTestData
+     );
 
 /* let generateReport = (reportFilePath, compareResultData) =>
    GenerateReport.generateHtmlFile(reportFilePath, compareResultData)
@@ -80,14 +81,14 @@ let _filterFailCases = (maxAllowDiffTimePercent, maxAllowDiffMemoryPercent, fail
      );
 
 let _buildPerformanceTestDataFromFailList = (commonData, failList) => {
-  let (_, (firstTestName, firstCase, _, _)) = List.hd(failList);
+  let (_, (firstTestName, firstCase, _, _, _)) = List.hd(failList);
   {
     commonData,
     testDataList:
       failList
       |> List.tl
       |> List.fold_left(
-           ((testDataList, caseList, lastTestName), (_, (testName, case, _, _))) =>
+           ((testDataList, caseList, lastTestName), (_, (testName, case, _, _, _))) =>
              lastTestName === testName ?
                (testDataList, caseList @ [case], testName) :
                (testDataList @ [({name: lastTestName, caseList}: testData)], [case], testName),
@@ -99,6 +100,31 @@ let _buildPerformanceTestDataFromFailList = (commonData, failList) => {
       )
   }
 };
+
+let _updatePassdTimeListMap = (testName, caseName, passedTimeList, map) =>
+  switch (map |> WonderCommonlib.HashMapSystem.get(testName)) {
+  | None =>
+    map
+    |> WonderCommonlib.HashMapSystem.set(
+         testName,
+         WonderCommonlib.HashMapSystem.createEmpty()
+         |> WonderCommonlib.HashMapSystem.set(caseName, passedTimeList)
+       )
+  | Some(mapWithCaseName) =>
+    mapWithCaseName |> WonderCommonlib.HashMapSystem.set(caseName, passedTimeList) |> ignore;
+    map
+  };
+
+let _updatePassdTimeListMapFromFailList = (failList, passedTimeListMap) =>
+  failList
+  |> List.fold_left(
+       (
+         passedTimeListMap,
+         (_, (testName, {name}: case, diffTimePercentList, passedTimeList, diffMemoryPercent))
+       ) =>
+         passedTimeListMap |> _updatePassdTimeListMap(testName, name, passedTimeList),
+       passedTimeListMap
+     );
 
 let _compareSpecificCount =
     (
@@ -116,22 +142,26 @@ let _compareSpecificCount =
             compareCount,
             allTargetScriptFilePathList,
             allBaseScriptFilePathList,
+            passedTimeListMap,
             {commonData} as performanceTestData,
             needReCompareFailList,
             resultFailList
           ) => {
     WonderLog.Log.log("compare...") |> ignore;
     let {execCountWhenGenerateBenchmark, maxAllowDiffTimePercent, maxAllowDiffMemoryPercent} = commonData;
-    [@bs] compareFunc(browser, allTargetScriptFilePathList, performanceTestData)
+    [@bs]
+       compareFunc(browser, allTargetScriptFilePathList, passedTimeListMap, performanceTestData)
     |> then_(
          (failList) =>
            Comparer.isPass(failList) ?
              failList |> resolve :
              {
+               let passedTimeListMap =
+                 _updatePassdTimeListMapFromFailList(failList, passedTimeListMap);
                let needReCompareFailList =
                  failList
                  |> List.filter(
-                      ((_, (testName, case, diffTimePercentList, diffMemoryPercent))) =>
+                      ((_, (testName, case, diffTimePercentList, _, diffMemoryPercent))) =>
                         _isNotExceedMaxDiffPercent(
                           maxAllowDiffTimePercent,
                           maxAllowDiffMemoryPercent,
@@ -142,7 +172,7 @@ let _compareSpecificCount =
                let notNeedReCompareFailList =
                  failList
                  |> List.filter(
-                      ((_, (testName, case, diffTimePercentList, diffMemoryPercent))) =>
+                      ((_, (testName, case, diffTimePercentList, _, diffMemoryPercent))) =>
                         !
                           _isNotExceedMaxDiffPercent(
                             maxAllowDiffTimePercent,
@@ -172,7 +202,7 @@ let _compareSpecificCount =
                  | _ =>
                    needReCompareFailList
                    |> List.fold_left(
-                        (promise, (_, (testName, case, _, _))) =>
+                        (promise, (_, (testName, case, _, _, _))) =>
                           promise
                           |> then_(
                                (browser) =>
@@ -195,6 +225,7 @@ let _compareSpecificCount =
                             compareCount - 1,
                             allTargetScriptFilePathList,
                             allBaseScriptFilePathList,
+                            passedTimeListMap,
                             _buildPerformanceTestDataFromFailList(
                               commonData,
                               needReCompareFailList
@@ -213,6 +244,7 @@ let _compareSpecificCount =
     compareCount,
     allTargetScriptFilePathList,
     allBaseScriptFilePathList,
+    WonderCommonlib.HashMapSystem.createEmpty(),
     performanceTestData,
     [],
     []
