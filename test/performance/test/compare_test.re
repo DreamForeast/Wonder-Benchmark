@@ -14,12 +14,12 @@ let _ =
       beforeEach(() => sandbox := createSandbox());
       afterEach(() => restoreSandbox(refJsObjToSandbox(sandbox^)));
       afterAll(
-        () =>
-          GenerateBenchmark.removeFiles(
-            Node.Path.join([|Node.Process.cwd(), "./test/performance/benchmark"|])
-          )
-      );
-      beforeAllPromise(() => Tester.generateBenchmark(correctPerformanceTestData));
+           () =>
+             GenerateBenchmark.removeFiles(
+               Node.Path.join([|Node.Process.cwd(), "./test/performance/benchmark"|])
+             )
+         );
+         beforeAllPromise(() => Tester.generateBenchmark(correctPerformanceTestData));
       describe(
         "Comparer",
         () =>
@@ -104,75 +104,176 @@ let _ =
                   ) =>
                 failList
                 @ [(testTitle, (testName, case, diffTimePercentList, passedTimeList, diffMemory))];
-              /* describe(
-                   "if one item of timeList is already passed in previouse compare, not compare it in the later compare ",
-                   () => {
-                     let _prepare = () => {
-                       let failCase1 = _buildFailCase(~name="case1", ());
-                       let failCase2 = _buildFailCase(~name="case2", ());
-                       let failList =
-                         []
-                         |> _buildFailList(
-                              "test1_title1",
-                              "test1",
-                              failCase1,
-                              [wrongPerformanceTestData.commonData.maxAllowDiffTimePercent - 1],
-                              [true],
-                              1
-                            )
-                         |> _buildFailList(
-                              "test1_title1",
-                              "test2",
-                              failCase2,
-                              [wrongPerformanceTestData.commonData.maxAllowDiffTimePercent - 1],
-                              [false],
-                              1
-                            );
-                       (failCase1, failCase2, failList)
-                     };
-                     let _buildTestData = (baseDir, scriptFilePathList, performanceTestData) => {
-                       ...performanceTestData,
-                       commonData: {...performanceTestData.commonData, scriptFilePathList, baseDir}
-                     };
-                     testPromise(
-                       "test",
-                       () => {
-                         let (_, _, failList) = _prepare();
-                         let _fakeCompare = createEmptyStubWithJsObjSandbox(sandbox);
-                         _fakeCompare
-                         |> onCall(0)
-                         |> returns(make((~resolve, ~reject) => [@bs] resolve(failList)));
-                         _fakeCompare
-                         |> onCall(1)
-                         |> returns(make((~resolve, ~reject) => [@bs] resolve([])));
-                         let _fakeGenerateCaseBenchmark = createEmptyStubWithJsObjSandbox(sandbox);
-
-
-
-
-
-                         TesterTool.compareSpecificCount(
-                           Obj.magic(1),
-                           2,
-                           _fakeCompare,
-                           _fakeGenerateCaseBenchmark,
-                           _buildTestData(
-                             "./test/base",
-                             ["./test/res/a.js", "./test/res/aaa/b.js"],
-                             wrongPerformanceTestData
-                           )
+              describe(
+                "if one item of timeList is already passed in previouse compare, not compare it in the later compare ",
+                () => {
+                  let _prepare = () => {
+                    let failCase1 = _buildFailCase(~name="case1", ());
+                    let failCase2 = _buildFailCase(~name="case2", ());
+                    let failList =
+                      []
+                      |> _buildFailList(
+                           "test1_title1",
+                           "test1",
+                           failCase1,
+                           [wrongPerformanceTestData.commonData.maxAllowDiffTimePercent - 1],
+                           [false],
+                           1
                          )
-                         |> then_(
-                              (resultFailList) =>
-                                List.nth(_fakeGenerateCaseBenchmark |> getCall(0) |> getArgs, 2)
-                                |>
-                                expect == ["test/base/test/res/a.js", "test/base/test/res/aaa/b.js"]
-                                |> resolve
+                      |> _buildFailList(
+                           "test1_title1",
+                           "test2",
+                           failCase2,
+                           [wrongPerformanceTestData.commonData.maxAllowDiffTimePercent - 1],
+                           [false],
+                           1
+                         );
+                    (failCase1, failCase2, failList)
+                  };
+                  test(
+                    "test Tester->_updatePassdTimeListMapFromFailList",
+                    () => {
+                      let failCase1 = _buildFailCase(~name="case1", ());
+                      let failCase2 = _buildFailCase(~name="case2", ());
+                      let failList1 =
+                        []
+                        |> _buildFailList(
+                             "test1_title1",
+                             "test1",
+                             failCase1,
+                             [1, 1],
+                             [false, false],
+                             1
+                           )
+                        |> _buildFailList(
+                             "test1_title1",
+                             "test1",
+                             failCase2,
+                             [1, 1],
+                             [true, false],
+                             1
+                           );
+                      let failList2 =
+                        []
+                        |> _buildFailList(
+                             "test1_title1",
+                             "test1",
+                             failCase1,
+                             [1, 1],
+                             [true, false],
+                             1
+                           )
+                        |> _buildFailList(
+                             "test1_title1",
+                             "test1",
+                             failCase2,
+                             [1, 1],
+                             [false, true],
+                             1
+                           );
+                      let passedTimeListMap =
+                        WonderCommonlib.HashMapSystem.createEmpty()
+                        |> Tester._updatePassdTimeListMapFromFailList(failList1)
+                        |> Tester._updatePassdTimeListMapFromFailList(failList2);
+                      (
+                        passedTimeListMap
+                        |> WonderCommonlib.HashMapSystem.unsafeGet("test1")
+                        |> WonderCommonlib.HashMapSystem.unsafeGet("case1"),
+                        passedTimeListMap
+                        |> WonderCommonlib.HashMapSystem.unsafeGet("test1")
+                        |> WonderCommonlib.HashMapSystem.unsafeGet("case2")
+                      )
+                      |> expect == ([true, false], [true, true])
+                    }
+                  );
+                  describe(
+                    "test Comparer->_compare",
+                    () => {
+                      let _buildActuablCaseList =
+                          (caseName, errorRate, timestamp, timeTextList, timeList, memory, list) =>
+                        list
+                        @ [
+                          (
+                            caseName,
+                            errorRate,
+                            timestamp,
+                            timeTextList,
+                            timeList,
+                            memory,
+                            Obj.magic(1)
+                          )
+                        ];
+                      let _buildBenchmarkCaseList =
+                          (caseName, errorRate, timestamp, timeTextList, timeList, memory, list) =>
+                        list @ [(caseName, errorRate, timestamp, timeTextList, timeList, memory)];
+                      test(
+                        "if item of time list is already pass before, not compare it",
+                        () => {
+                          let actualResultCaseList =
+                            [] |> _buildActuablCaseList("c1", 1, 1, ["t1", "t2"], [10, 25], 10);
+                          let benchmarkResultCaseList =
+                            [] |> _buildBenchmarkCaseList("c1", 1, 2, ["t1", "t2"], [15, 20], 10);
+                          let passedTimeListMap =
+                            WonderCommonlib.HashMapSystem.createEmpty()
+                            |> WonderCommonlib.HashMapSystem.set(
+                                 "test1",
+                                 WonderCommonlib.HashMapSystem.createEmpty()
+                                 |> WonderCommonlib.HashMapSystem.set("c1", [true, false])
+                               );
+                          let failList =
+                            Comparer._compare(
+                              passedTimeListMap,
+                              "test1",
+                              actualResultCaseList,
+                              benchmarkResultCaseList
+                            );
+                          let (
+                            failMessage,
+                            (
+                              actualTestName,
+                              actualCase,
+                              diffTimePercentList,
+                              passedTimeList,
+                              diffMemoryPercent
                             )
-                       }
-                     )
-                   }
-                 ); */
+                          ) =
+                            failList |> List.hd;
+                          passedTimeList |> expect == [true, false]
+                        }
+                      );
+                      test(
+                        "else, compare it",
+                        () => {
+                          let actualResultCaseList =
+                            [] |> _buildActuablCaseList("c1", 1, 1, ["t1", "t2"], [10, 20], 10);
+                          let benchmarkResultCaseList =
+                            [] |> _buildBenchmarkCaseList("c1", 1, 2, ["t1", "t2"], [15, 20], 10);
+                          let passedTimeListMap = WonderCommonlib.HashMapSystem.createEmpty();
+                          let failList =
+                            Comparer._compare(
+                              passedTimeListMap,
+                              "test1",
+                              actualResultCaseList,
+                              benchmarkResultCaseList
+                            );
+                          let (
+                            failMessage,
+                            (
+                              actualTestName,
+                              actualCase,
+                              diffTimePercentList,
+                              passedTimeList,
+                              diffMemoryPercent
+                            )
+                          ) =
+                            failList |> List.hd;
+                          passedTimeList |> expect == [false, true]
+                        }
+                      )
+                    }
+                  )
+                }
+              );
               describe(
                 "compare at most 3 times",
                 () =>
@@ -420,7 +521,8 @@ let _ =
                     |> returns(make((~resolve, ~reject) => [@bs] resolve(failList)));
                     _fakeCompare
                     |> onCall(1)
-                    |> returns(make((~resolve, ~reject) => [@bs] resolve([List.nth(failList, 1)])));
+                    /* |> returns(make((~resolve, ~reject) => [@bs] resolve([List.nth(failList, 1)]))); */
+                    |> returns(make((~resolve, ~reject) => [@bs] resolve([])));
                     let _fakeGenerateCaseBenchmark = createEmptyStubWithJsObjSandbox(sandbox);
                     TesterTool.compareSpecificCount(
                       Obj.magic(1),
@@ -439,7 +541,7 @@ let _ =
                              ).
                                name
                            )
-                           |> expect == (failList, "test2")
+                           |> expect == ([List.nth(failList, 0)], "test2")
                            |> resolve
                        )
                   };

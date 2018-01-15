@@ -42,12 +42,12 @@ let generateReport = (reportFilePath, failList, performanceTestData) =>
 
 let compare = (browser, {commonData, testDataList} as performanceTestData) =>
   [@bs]
-     Comparer.compare(
-       browser,
-       ScriptFileUtils.getAllScriptFilePathList(commonData),
-       WonderCommonlib.HashMapSystem.createEmpty(),
-       performanceTestData
-     );
+  Comparer.compare(
+    browser,
+    ScriptFileUtils.getAllScriptFilePathList(commonData),
+    WonderCommonlib.HashMapSystem.createEmpty(),
+    performanceTestData
+  );
 
 /* let generateReport = (reportFilePath, compareResultData) =>
    GenerateReport.generateHtmlFile(reportFilePath, compareResultData)
@@ -101,18 +101,39 @@ let _buildPerformanceTestDataFromFailList = (commonData, failList) => {
   }
 };
 
-let _updatePassdTimeListMap = (testName, caseName, passedTimeList, map) =>
+let _getUnion = (sourcePassedTimeList, targetPassedTimeList) =>
+  List.fold_left2(
+    (resultList, sourceIsPass, targetIsPass) =>
+      resultList @ (sourceIsPass || targetIsPass ? [true] : [false]),
+    [],
+    sourcePassedTimeList,
+    targetPassedTimeList
+  );
+
+let _updatePassdTimeListMap = (testName, caseName, targetPassedTimeList, map) =>
   switch (map |> WonderCommonlib.HashMapSystem.get(testName)) {
   | None =>
+    WonderLog.Log.print((testName, caseName)) |> ignore;
     map
     |> WonderCommonlib.HashMapSystem.set(
          testName,
          WonderCommonlib.HashMapSystem.createEmpty()
-         |> WonderCommonlib.HashMapSystem.set(caseName, passedTimeList)
+         |> WonderCommonlib.HashMapSystem.set(caseName, targetPassedTimeList)
        )
   | Some(mapWithCaseName) =>
-    mapWithCaseName |> WonderCommonlib.HashMapSystem.set(caseName, passedTimeList) |> ignore;
-    map
+    WonderLog.Log.print(222) |> ignore;
+    /* mapWithCaseName |> WonderCommonlib.HashMapSystem.set(caseName, targetPassedTimeList) |> ignore; */
+    mapWithCaseName
+    |> WonderCommonlib.HashMapSystem.set(
+         caseName,
+         switch (mapWithCaseName |> WonderCommonlib.HashMapSystem.get(caseName)) {
+         | None => targetPassedTimeList
+         | Some(sourcePassedTimeList) =>
+           _getUnion(sourcePassedTimeList, targetPassedTimeList) |> WonderLog.Log.print
+         }
+       )
+    |> ignore;
+    map |> WonderLog.Log.printJson
   };
 
 let _updatePassdTimeListMapFromFailList = (failList, passedTimeListMap) =>
@@ -149,12 +170,11 @@ let _compareSpecificCount =
           ) => {
     WonderLog.Log.log("compare...") |> ignore;
     let {execCountWhenGenerateBenchmark, maxAllowDiffTimePercent, maxAllowDiffMemoryPercent} = commonData;
-    [@bs]
-       compareFunc(browser, allTargetScriptFilePathList, passedTimeListMap, performanceTestData)
+    [@bs] compareFunc(browser, allTargetScriptFilePathList, passedTimeListMap, performanceTestData)
     |> then_(
          (failList) =>
            Comparer.isPass(failList) ?
-             failList |> resolve :
+             resultFailList |> resolve :
              {
                let passedTimeListMap =
                  _updatePassdTimeListMapFromFailList(failList, passedTimeListMap);

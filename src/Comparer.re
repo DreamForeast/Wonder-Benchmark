@@ -88,7 +88,7 @@ let _compareTime =
     ((failMessage, diffList, newPassedTimeList), (actualTime, actualTimeText), benchmarkTime) => {
       index := index^ + 1;
       _isTimePassed(passedTimeList, index^) ?
-        (failMessage, diffList, [true, ...newPassedTimeList]) :
+        (failMessage, diffList, newPassedTimeList @ [true]) :
         {
           let (minTime, maxTime) = _getRange(benchmarkTime, errorRate);
           switch (_isInRange(actualTime, (minTime, maxTime))) {
@@ -99,9 +99,9 @@ let _compareTime =
               failMessage
               ++ {j|expect time:$actualTimeText to in [$minTime, $maxTime], but actual is $actualTime. the diff is $diffStr\n|j},
               diffList @ [diff],
-              [false, ...newPassedTimeList]
+              newPassedTimeList @ [false]
             )
-          | true => (failMessage, diffList, [true, ...newPassedTimeList])
+          | true => (failMessage, diffList, newPassedTimeList @ [true])
           }
         }
     },
@@ -137,6 +137,94 @@ let _getPassedTimeList = (passedTimeListMap, testName, caseName) : option(list(b
     }
   };
 
+let _compare = (passedTimeListMap, actualTestName, actualResultCaseList, benchmarkResultCaseList) =>
+  List.fold_left2(
+    (
+      failList,
+      (
+        actualCaseName,
+        actualErrorRate,
+        actualTimestamp,
+        actualTimeTextList,
+        actualTimeList,
+        actualMemory,
+        actualCase
+      ),
+      (
+        benchmarkCaseName,
+        benchmarkErrorRate,
+        benchmarkTimestamp,
+        benchmarkTimeTextList,
+        benchmarkTimeList,
+        benchmarkMemory
+      )
+    ) =>
+      actualCaseName !== benchmarkCaseName ?
+        WonderLog.Log.fatal(
+          WonderLog.Log.buildFatalMessage(
+            ~title="compare",
+            ~description={j|actual caseName:$actualCaseName should === benchmark caseName:$benchmarkCaseName|j},
+            ~reason="",
+            ~solution={j||j},
+            ~params={j||j}
+          )
+        ) :
+        actualErrorRate !== benchmarkErrorRate ?
+          WonderLog.Log.fatal(
+            WonderLog.Log.buildFatalMessage(
+              ~title="compare",
+              ~description={j|actual errorRate:$actualErrorRate should === benchmark errorRate:$benchmarkErrorRate|j},
+              ~reason="",
+              ~solution={j||j},
+              ~params={j||j}
+            )
+          ) :
+          (
+            switch (
+              ""
+              |> _compareTime(
+                   actualTimeList,
+                   actualTimeTextList,
+                   benchmarkTimeList,
+                   _getPassedTimeList(passedTimeListMap, actualTestName, actualCaseName),
+                   actualErrorRate
+                 )
+              |> _compareMemory(actualMemory, benchmarkMemory, actualErrorRate)
+            ) {
+            | (failMessage, diffTimePercentList, passedTimeList, diffMemoryPercent)
+                when _isFail(failMessage) => [
+                (
+                  /* PerformanceTestDataUtils.buildCaseTitle(
+                       actualTestName,
+                       actualCaseName
+                     )
+                     ++ failMessage, */
+                  failMessage,
+                  (
+                    actualTestName,
+                    actualCase,
+                    diffTimePercentList,
+                    passedTimeList,
+                    diffMemoryPercent
+                  )
+                ),
+                ...failList
+              ]
+            | _ => failList
+            }
+          ),
+    [],
+    actualResultCaseList,
+    benchmarkResultCaseList
+    |> List.filter(
+         ((benchmarkCaseName, _, _, _, _, _)) =>
+           actualResultCaseList
+           |> List.exists(
+                ((actualCaseName, _, _, _, _, _, _)) => actualCaseName === benchmarkCaseName
+              )
+       )
+  );
+
 let compare =
   [@bs]
   (
@@ -171,101 +259,11 @@ let compare =
                         )
                       )
                     | (_, benchmarkResultCaseList) =>
-                      List.fold_left2(
-                        (
-                          failList,
-                          (
-                            actualCaseName,
-                            actualErrorRate,
-                            actualTimestamp,
-                            actualTimeTextList,
-                            actualTimeList,
-                            actualMemory,
-                            actualCase
-                          ),
-                          (
-                            benchmarkCaseName,
-                            benchmarkErrorRate,
-                            benchmarkTimestamp,
-                            benchmarkTimeTextList,
-                            benchmarkTimeList,
-                            benchmarkMemory
-                          )
-                        ) =>
-                          actualCaseName !== benchmarkCaseName ?
-                            WonderLog.Log.fatal(
-                              WonderLog.Log.buildFatalMessage(
-                                ~title="compare",
-                                ~description={j|actual caseName:$actualCaseName should === benchmark caseName:$benchmarkCaseName|j},
-                                ~reason="",
-                                ~solution={j||j},
-                                ~params={j||j}
-                              )
-                            ) :
-                            actualErrorRate !== benchmarkErrorRate ?
-                              WonderLog.Log.fatal(
-                                WonderLog.Log.buildFatalMessage(
-                                  ~title="compare",
-                                  ~description={j|actual errorRate:$actualErrorRate should === benchmark errorRate:$benchmarkErrorRate|j},
-                                  ~reason="",
-                                  ~solution={j||j},
-                                  ~params={j||j}
-                                )
-                              ) :
-                              (
-                                switch (
-                                  ""
-                                  |> _compareTime(
-                                       actualTimeList,
-                                       actualTimeTextList,
-                                       benchmarkTimeList,
-                                       _getPassedTimeList(
-                                         passedTimeListMap,
-                                         actualTestName,
-                                         actualCaseName
-                                       ),
-                                       actualErrorRate
-                                     )
-                                  |> _compareMemory(actualMemory, benchmarkMemory, actualErrorRate)
-                                ) {
-                                | (
-                                    failMessage,
-                                    diffTimePercentList,
-                                    passedTimeList,
-                                    diffMemoryPercent
-                                  )
-                                    when _isFail(failMessage) => [
-                                    (
-                                      /* PerformanceTestDataUtils.buildCaseTitle(
-                                           actualTestName,
-                                           actualCaseName
-                                         )
-                                         ++ failMessage, */
-                                      failMessage,
-                                      (
-                                        actualTestName,
-                                        actualCase,
-                                        diffTimePercentList,
-                                        passedTimeList,
-                                        diffMemoryPercent
-                                      )
-                                    ),
-                                    ...failList
-                                  ]
-                                | _ => failList
-                                }
-                              ),
-                        [],
+                      _compare(
+                        passedTimeListMap,
+                        actualTestName,
                         actualResultCaseList,
                         benchmarkResultCaseList
-                        |> List.filter(
-                             ((benchmarkCaseName, _, _, _, _, _)) =>
-                               actualResultCaseList
-                               |> List.exists(
-                                    ((actualCaseName, _, _, _, _, _, _)) =>
-                                      actualCaseName === benchmarkCaseName
-                                  )
-                           )
                       )
                     },
                   []
