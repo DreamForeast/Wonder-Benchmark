@@ -36,7 +36,7 @@ let _ =
                          |> then_(
                               (failList) => {
                                 let failText = Comparer.getFailText(failList);
-                                /* WonderCommonlib.DebugUtils.log(failText) |> ignore; */
+                                /* WonderLog.Log.log(failText) |> ignore; */
                                 (
                                   Comparer.isPass(failList),
                                   failText |> Js.String.includes("pf_test1"),
@@ -127,7 +127,7 @@ let _ =
                                  |> then_((failList) => pass |> resolve)
                                  |> catch(
                                       (err) => {
-                                        WonderCommonlib.DebugUtils.log(err) |> ignore;
+                                        WonderLog.Log.log(err) |> ignore;
                                         fail("should be pass, but actual is fail") |> resolve
                                       }
                                     )

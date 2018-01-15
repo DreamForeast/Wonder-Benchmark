@@ -236,7 +236,7 @@ let measureCase =
   |> then_(
        (resultList) => {
          let title = PerformanceTestDataUtils.buildCaseTitle(testName, caseName);
-         WonderCommonlib.DebugUtils.log({j|measure $(title)...|j}) |> ignore;
+         WonderLog.Log.log({j|measure $(title)...|j}) |> ignore;
          resultList |> resolve
        }
      )

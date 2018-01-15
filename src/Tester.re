@@ -110,12 +110,6 @@ let _compareSpecificCount =
       generateCaseFunc,
       performanceTestData
     ) => {
-  /* WonderCommonlib.DebugUtils.log(1111) |> ignore; */
-  /* WonderCommonlib.DebugUtils.logJson((
-       allTargetScriptFilePathList,
-       allBaseScriptFilePathList
-     ))
-     |> ignore; */
   let rec _compare =
           (
             browser,
@@ -129,7 +123,7 @@ let _compareSpecificCount =
     switch compareCount {
     | count when compareCount === 0 => resultFailList @ needReCompareFailList |> resolve
     | _ =>
-      WonderCommonlib.DebugUtils.log("compare...") |> ignore;
+      WonderLog.Log.log("compare...") |> ignore;
       let {execCountWhenGenerateBenchmark, maxAllowDiffTimePercent, maxAllowDiffMemoryPercent} = commonData;
       [@bs] compareFunc(browser, allTargetScriptFilePathList, performanceTestData)
       |> then_(
@@ -165,9 +159,9 @@ let _compareSpecificCount =
                  | _ =>
                    notNeedReCompareFailList |> List.length > 0 ?
                      {
-                       WonderCommonlib.DebugUtils.log("fail cases which not need re compare:")
+                       WonderLog.Log.log("fail cases which not need re compare:")
                        |> ignore;
-                       WonderCommonlib.DebugUtils.log(
+                       WonderLog.Log.log(
                          Comparer.getFailText(notNeedReCompareFailList)
                        )
                        |> ignore
@@ -175,8 +169,8 @@ let _compareSpecificCount =
                      ();
                    needReCompareFailList |> List.length > 0 ?
                      {
-                       WonderCommonlib.DebugUtils.log("fail cases which need re compare:") |> ignore;
-                       WonderCommonlib.DebugUtils.log(Comparer.getFailText(needReCompareFailList))
+                       WonderLog.Log.log("fail cases which need re compare:") |> ignore;
+                       WonderLog.Log.log(Comparer.getFailText(needReCompareFailList))
                        |> ignore
                      } :
                      ();

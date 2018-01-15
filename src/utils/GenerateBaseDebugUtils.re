@@ -6,7 +6,7 @@ open GenerateDebugFileUtils;
 
 /* |> List.iter(
      ({sourceScriptFilePath, targetScriptFilePath}) => {
-       WonderCommonlib.DebugUtils.log(
+       WonderLog.Log.log(
          {j|copy $(sourceScriptFilePath) to $(targetScriptFilePath)...|j}
        )
        |> ignore;
@@ -36,11 +36,11 @@ let buildDebugHtmlFileName = (testName, caseName) =>
 let _getBaseDir = ({baseDir}) => baseDir;
 
 let _getBaseScriptFilePath = (baseDir, scriptFilePath) =>
-  /* WonderCommonlib.DebugUtils.log(baseDir) |> ignore;  */
-  /* WonderCommonlib.DebugUtils.log(scriptFilePath) |> ignore;  */
+  /* WonderLog.Log.log(baseDir) |> ignore;  */
+  /* WonderLog.Log.log(scriptFilePath) |> ignore;  */
   Path.join([|baseDir, scriptFilePath|]);
 
-/* |> WonderCommonlib.DebugUtils.log */
+/* |> WonderLog.Log.log */
 /* let _getCaseAllScriptFilePathList = (scriptFilePathList, {commonData}) : list(string) => {
      let baseDir = _getBaseDir(commonData);
      ScriptFileUtils.getAllScriptFilePathList(commonData)
@@ -64,7 +64,6 @@ let _getAllBaseAndTargetScriptFilePathList = ({commonData} as performanceTestDat
 let copyBaseScript = ({commonData, testDataList} as performanceTestData) =>
   performanceTestData
   |> _getAllBaseAndTargetScriptFilePathList
-  /* |> WonderCommonlib.DebugUtils.logJson */
   |> List.iter(
        ((baseScriptFilePath, targetScriptFilePath)) =>
          Fs.readFileAsUtf8Sync(targetScriptFilePath)

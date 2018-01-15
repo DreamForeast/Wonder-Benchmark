@@ -21,8 +21,9 @@
   },
   "dependencies": {
     "bs-json": "^0.2.3",
+    "wonder-log": "^0.1.1",
     "wonder-bs-puppeteer": "^0.1.0",
-    "wonder-commonlib": "^0.2.18"
+    "wonder-commonlib": "^0.2.19"
   },
   "resolutions": {
     "wonder-bs-jest": "0.2.17"

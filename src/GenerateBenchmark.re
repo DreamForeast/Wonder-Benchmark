@@ -44,9 +44,9 @@ let removeFiles = (benchmarkDir) =>
 let _generateBenchmark = (benchmarkPath, testName, resultCaseList) => {
   let filePath =
     _buildDataFilePath(benchmarkPath, BenchmarkDataConverter.buildDataFileName(testName));
-  WonderCommonlib.DebugUtils.log({j|generate benchmark:$filePath...|j}) |> ignore;
+  WonderLog.Log.log({j|generate benchmark:$filePath...|j}) |> ignore;
   BenchmarkDataConverter.convertToJsonStr(testName, resultCaseList)
-  |> WonderCommonlib.DebugUtils.log
+  |> WonderLog.Log.print
   |> WonderCommonlib.NodeExtend.writeFile(filePath)
 };
 
@@ -68,15 +68,13 @@ let _changeCaseBenchmark = (benchmarkPath, testName, resultCase) => {
   let filePath =
     _buildDataFilePath(benchmarkPath, BenchmarkDataConverter.buildDataFileName(testName));
   let (caseName, errorRate, timestamp, timeTextList, timeList, memory, _) = resultCase;
-  WonderCommonlib.DebugUtils.log(
+  WonderLog.Log.log(
     {j|generate new  benchmark case data(filePath:$(filePath), case name:$(caseName))...|j}
   )
   |> ignore;
   let (name, cases) = getBenchmarkData(testName, benchmarkPath);
   let caseArr = cases |> Array.of_list;
-  let newCaseArr =
-    caseArr
-    |> Js.Array.copy;
+  let newCaseArr = caseArr |> Js.Array.copy;
   newCaseArr
   |> Js.Array.spliceInPlace(
        ~pos=caseArr |> Js.Array.findIndex(((name, _, _, _, _, _)) => name === caseName),
@@ -97,7 +95,7 @@ let _changeCaseBenchmark = (benchmarkPath, testName, resultCase) => {
        )
      )
   |> BenchmarkDataConverter.convertToJsonStr(testName)
-  |> WonderCommonlib.DebugUtils.log
+  |> WonderLog.Log.print
   |> WonderCommonlib.NodeExtend.writeFile(filePath)
 };
 
