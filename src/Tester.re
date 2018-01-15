@@ -113,7 +113,6 @@ let _getUnion = (sourcePassedTimeList, targetPassedTimeList) =>
 let _updatePassdTimeListMap = (testName, caseName, targetPassedTimeList, map) =>
   switch (map |> WonderCommonlib.HashMapSystem.get(testName)) {
   | None =>
-    WonderLog.Log.print((testName, caseName)) |> ignore;
     map
     |> WonderCommonlib.HashMapSystem.set(
          testName,
@@ -121,19 +120,16 @@ let _updatePassdTimeListMap = (testName, caseName, targetPassedTimeList, map) =>
          |> WonderCommonlib.HashMapSystem.set(caseName, targetPassedTimeList)
        )
   | Some(mapWithCaseName) =>
-    WonderLog.Log.print(222) |> ignore;
-    /* mapWithCaseName |> WonderCommonlib.HashMapSystem.set(caseName, targetPassedTimeList) |> ignore; */
     mapWithCaseName
     |> WonderCommonlib.HashMapSystem.set(
          caseName,
          switch (mapWithCaseName |> WonderCommonlib.HashMapSystem.get(caseName)) {
          | None => targetPassedTimeList
-         | Some(sourcePassedTimeList) =>
-           _getUnion(sourcePassedTimeList, targetPassedTimeList) |> WonderLog.Log.print
+         | Some(sourcePassedTimeList) => _getUnion(sourcePassedTimeList, targetPassedTimeList)
          }
        )
     |> ignore;
-    map |> WonderLog.Log.printJson
+    map
   };
 
 let _updatePassdTimeListMapFromFailList = (failList, passedTimeListMap) =>

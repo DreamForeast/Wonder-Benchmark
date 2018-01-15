@@ -189,6 +189,7 @@ let _compare = (passedTimeListMap, actualTestName, actualResultCaseList, benchma
                    _getPassedTimeList(passedTimeListMap, actualTestName, actualCaseName),
                    actualErrorRate
                  )
+              /* TODO improve: if memory pass before, not compare memory again */
               |> _compareMemory(actualMemory, benchmarkMemory, actualErrorRate)
             ) {
             | (failMessage, diffTimePercentList, passedTimeList, diffMemoryPercent)
