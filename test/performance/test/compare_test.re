@@ -217,10 +217,13 @@ var testScript = {
                       _fakeCompare
                       |> onCall(0)
                       |> returns(make((~resolve, ~reject) => [@bs] resolve(failList)));
+                      _fakeCompare
+                      |> onCall(1)
+                      |> returns(make((~resolve, ~reject) => [@bs] resolve([])));
                       let _fakeGenerateCaseBenchmark = createEmptyStubWithJsObjSandbox(sandbox);
                       TesterTool.compareSpecificCount(
                         Obj.magic(1),
-                        1,
+                        2,
                         _fakeCompare,
                         _fakeGenerateCaseBenchmark,
                         _buildTestData(

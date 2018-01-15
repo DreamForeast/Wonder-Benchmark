@@ -119,61 +119,57 @@ let _compareSpecificCount =
             {commonData} as performanceTestData,
             needReCompareFailList,
             resultFailList
-          ) =>
-    switch compareCount {
-    | count when compareCount === 0 => resultFailList @ needReCompareFailList |> resolve
-    | _ =>
-      WonderLog.Log.log("compare...") |> ignore;
-      let {execCountWhenGenerateBenchmark, maxAllowDiffTimePercent, maxAllowDiffMemoryPercent} = commonData;
-      [@bs] compareFunc(browser, allTargetScriptFilePathList, performanceTestData)
-      |> then_(
-           (failList) =>
-             Comparer.isPass(failList) ?
-               failList |> resolve :
-               {
-                 let needReCompareFailList =
-                   failList
-                   |> List.filter(
-                        ((_, (testName, case, diffTimePercentList, diffMemoryPercent))) =>
+          ) => {
+    WonderLog.Log.log("compare...") |> ignore;
+    let {execCountWhenGenerateBenchmark, maxAllowDiffTimePercent, maxAllowDiffMemoryPercent} = commonData;
+    [@bs] compareFunc(browser, allTargetScriptFilePathList, performanceTestData)
+    |> then_(
+         (failList) =>
+           Comparer.isPass(failList) ?
+             failList |> resolve :
+             {
+               let needReCompareFailList =
+                 failList
+                 |> List.filter(
+                      ((_, (testName, case, diffTimePercentList, diffMemoryPercent))) =>
+                        _isNotExceedMaxDiffPercent(
+                          maxAllowDiffTimePercent,
+                          maxAllowDiffMemoryPercent,
+                          diffTimePercentList,
+                          diffMemoryPercent
+                        )
+                    );
+               let notNeedReCompareFailList =
+                 failList
+                 |> List.filter(
+                      ((_, (testName, case, diffTimePercentList, diffMemoryPercent))) =>
+                        !
                           _isNotExceedMaxDiffPercent(
                             maxAllowDiffTimePercent,
                             maxAllowDiffMemoryPercent,
                             diffTimePercentList,
                             diffMemoryPercent
                           )
-                      );
-                 let notNeedReCompareFailList =
-                   failList
-                   |> List.filter(
-                        ((_, (testName, case, diffTimePercentList, diffMemoryPercent))) =>
-                          !
-                            _isNotExceedMaxDiffPercent(
-                              maxAllowDiffTimePercent,
-                              maxAllowDiffMemoryPercent,
-                              diffTimePercentList,
-                              diffMemoryPercent
-                            )
-                      );
-                 switch (needReCompareFailList |> List.length) {
-                 | 0 => resultFailList @ notNeedReCompareFailList |> resolve
+                    );
+               switch (needReCompareFailList |> List.length) {
+               | 0 => resultFailList @ notNeedReCompareFailList |> resolve
+               | _ =>
+                 notNeedReCompareFailList |> List.length > 0 ?
+                   {
+                     WonderLog.Log.log("fail cases which not need re compare:") |> ignore;
+                     WonderLog.Log.log(Comparer.getFailText(notNeedReCompareFailList)) |> ignore
+                   } :
+                   ();
+                 needReCompareFailList |> List.length > 0 ?
+                   {
+                     WonderLog.Log.log("fail cases which need re compare:") |> ignore;
+                     WonderLog.Log.log(Comparer.getFailText(needReCompareFailList)) |> ignore
+                   } :
+                   ();
+                 switch compareCount {
+                 | count when count <= 1 =>
+                   resultFailList @ notNeedReCompareFailList @ needReCompareFailList |> resolve
                  | _ =>
-                   notNeedReCompareFailList |> List.length > 0 ?
-                     {
-                       WonderLog.Log.log("fail cases which not need re compare:")
-                       |> ignore;
-                       WonderLog.Log.log(
-                         Comparer.getFailText(notNeedReCompareFailList)
-                       )
-                       |> ignore
-                     } :
-                     ();
-                   needReCompareFailList |> List.length > 0 ?
-                     {
-                       WonderLog.Log.log("fail cases which need re compare:") |> ignore;
-                       WonderLog.Log.log(Comparer.getFailText(needReCompareFailList))
-                       |> ignore
-                     } :
-                     ();
                    needReCompareFailList
                    |> List.fold_left(
                         (promise, (_, (testName, case, _, _))) =>
@@ -209,8 +205,9 @@ let _compareSpecificCount =
                       )
                  }
                }
-         )
-    };
+             }
+       )
+  };
   _compare(
     browser,
     compareCount,
