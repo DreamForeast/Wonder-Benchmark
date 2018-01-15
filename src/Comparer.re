@@ -161,8 +161,14 @@ let compare =
                       GenerateBenchmark.getBenchmarkData(actualTestName, commonData.benchmarkPath)
                     ) {
                     | (benchmarkTestName, _) when benchmarkTestName !== actualTestName =>
-                      ExceptionHandleSystem.throwMessage(
-                        {j|benchmarkTestName:$benchmarkTestName should === actualTestName:$actualTestName|j}
+                      WonderLog.Log.fatal(
+                        WonderLog.Log.buildFatalMessage(
+                          ~title="compare",
+                          ~description={j|benchmarkTestName:$benchmarkTestName should === actualTestName:$actualTestName|j},
+                          ~reason="",
+                          ~solution={j||j},
+                          ~params={j||j}
+                        )
                       )
                     | (_, benchmarkResultCaseList) =>
                       List.fold_left2(
@@ -187,12 +193,24 @@ let compare =
                           )
                         ) =>
                           actualCaseName !== benchmarkCaseName ?
-                            ExceptionHandleSystem.throwMessage(
-                              {j|actual caseName:$actualCaseName should === benchmark caseName:$benchmarkCaseName|j}
+                            WonderLog.Log.fatal(
+                              WonderLog.Log.buildFatalMessage(
+                                ~title="compare",
+                                ~description={j|actual caseName:$actualCaseName should === benchmark caseName:$benchmarkCaseName|j},
+                                ~reason="",
+                                ~solution={j||j},
+                                ~params={j||j}
+                              )
                             ) :
                             actualErrorRate !== benchmarkErrorRate ?
-                              ExceptionHandleSystem.throwMessage(
-                                {j|actual errorRate:$actualErrorRate should === benchmark errorRate:$benchmarkErrorRate|j}
+                              WonderLog.Log.fatal(
+                                WonderLog.Log.buildFatalMessage(
+                                  ~title="compare",
+                                  ~description={j|actual errorRate:$actualErrorRate should === benchmark errorRate:$benchmarkErrorRate|j},
+                                  ~reason="",
+                                  ~solution={j||j},
+                                  ~params={j||j}
+                                )
                               ) :
                               (
                                 switch (
