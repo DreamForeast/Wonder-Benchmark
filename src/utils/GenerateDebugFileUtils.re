@@ -34,7 +34,7 @@ let _replaceBodyFuncStr = ({replaceBodyFuncStrWhenDebug}, bodyFuncStr) =>
 let generate =
     (targetAbsoluteFileDir, (testName, name, scriptFilePathList, bodyFuncStr, debugFileType), {commonData}) => {
   let htmlStr =
-    GenerateHtmlFile.buildHeadStr(buildDebugHtmlFileName(testName, name))
+    GenerateHtmlFile.buildHeadStr(buildDebugHtmlFileName(testName, name, debugFileType))
     ++ "\n<body>\n"
     ++ GenerateHtmlFile.buildImportScriptStr(targetAbsoluteFileDir, scriptFilePathList)
     ++ _buildDebugScriptStr(bodyFuncStr |> _replaceBodyFuncStr(commonData))
