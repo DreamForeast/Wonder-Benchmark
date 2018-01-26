@@ -105,7 +105,7 @@ let _ =
                 failList
                 @ [(testTitle, (testName, case, diffTimePercentList, passedTimeList, diffMemory))];
               describe(
-                "if one item of timeList is already passed in previouse compare, not compare it in the later compare ",
+                "if one item of timeList is already passed in previous compare, not compare it in the later compare ",
                 () => {
                   let _prepare = () => {
                     let failCase1 = _buildFailCase(~name="case1", ());

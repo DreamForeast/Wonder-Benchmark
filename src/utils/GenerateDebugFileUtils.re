@@ -23,13 +23,21 @@ let removeDebugFiles = (targetAbsoluteFileDir) =>
   Fs.existsSync(targetAbsoluteFileDir) ?
     WonderCommonlib.NodeExtend.rmdirFilesSync(targetAbsoluteFileDir) : ();
 
+
+let _replaceBodyFuncStr = ({replaceBodyFuncStrWhenDebug}, bodyFuncStr) =>
+  switch replaceBodyFuncStrWhenDebug {
+  | None => bodyFuncStr
+  | Some(func) => func(bodyFuncStr) 
+  };
+
+
 let generate =
-    (targetAbsoluteFileDir, (testName, name, scriptFilePathList, bodyFuncStr, debugFileType)) => {
+    (targetAbsoluteFileDir, (testName, name, scriptFilePathList, bodyFuncStr, debugFileType), {commonData}) => {
   let htmlStr =
     GenerateHtmlFile.buildHeadStr(buildDebugHtmlFileName(testName, name))
     ++ "\n<body>\n"
     ++ GenerateHtmlFile.buildImportScriptStr(targetAbsoluteFileDir, scriptFilePathList)
-    ++ _buildDebugScriptStr(bodyFuncStr)
+    ++ _buildDebugScriptStr(bodyFuncStr |> _replaceBodyFuncStr(commonData))
     ++ GenerateHtmlFile.buildFootStr();
   htmlStr
   |> WonderCommonlib.NodeExtend.writeFile(

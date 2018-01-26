@@ -26,7 +26,8 @@ type commonData = {
   /* generateBaseDebugData: option(list(copiedScriptData)), */
   baseDir: string,
   /* generateBaseDebugData: option(Js.Dict.t(string)), */
-  scriptFilePathList: list(string)
+  scriptFilePathList: list(string),
+  replaceBodyFuncStrWhenDebug: option((string => string))
 };
 
 type testData = {

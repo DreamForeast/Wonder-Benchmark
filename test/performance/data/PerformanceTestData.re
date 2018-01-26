@@ -15,7 +15,8 @@ let commonData1 = {
     "./test/res/wd.js",
     "./test/res/script1.js",
     "./test/res/script2.js"
-  ]
+  ],
+  replaceBodyFuncStrWhenDebug: None
 };
 
 let commonData2 = {
@@ -33,7 +34,8 @@ let commonData2 = {
     "./test/res/wd.js",
     "./test/res/script1.js",
     "./test/res/script2.js"
-  ]
+  ],
+  replaceBodyFuncStrWhenDebug: None
 };
 
 let correctPerformanceTestData = {
@@ -320,6 +322,7 @@ return {"textArray": ["prepare", "init", "loopBody"], "timeArray": [n1, n2, n3, 
     }
   ]
 };
+
 let wrongPerformanceTestData3 = {
   commonData: commonData1,
   testDataList: [

@@ -74,5 +74,5 @@ let generateBaseDebugFile =
     (targetAbsoluteFileDir, (testName, name, bodyFuncStr), {commonData} as performanceTestData) =>
   generate(
     targetAbsoluteFileDir,
-    (testName, name, getAllScriptFilePathList(performanceTestData), bodyFuncStr, _getType())
+    (testName, name, getAllScriptFilePathList(performanceTestData), bodyFuncStr, _getType()), performanceTestData
   );

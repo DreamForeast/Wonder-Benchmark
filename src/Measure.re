@@ -97,6 +97,13 @@ let _execBodyFunc: string => bodyFuncReturnValue = [%bs.raw
     |}
 ];
 
+let _exposeReadFileAsUtf8Sync = (page) =>
+  page
+  |> Page.exposeFunctionWithString(
+       "readFileAsUtf8Sync",
+       (filePath) => Fs.readFileAsUtf8Sync(filePath)
+     );
+
 let _execFunc =
     (isClosePage, allScriptFilePathList, name, bodyFuncStr, errorRate, browser, promise) =>
   promise
@@ -116,8 +123,15 @@ let _execFunc =
   |> then_(
        ((page, resultData, data)) =>
          page
-         |> Page.evaluateWithArg([@bs] _execBodyFunc, bodyFuncStr)
-         |> then_((timeData: bodyFuncReturnValue) => resolve((page, resultData, data, timeData)))
+         |> _exposeReadFileAsUtf8Sync
+         |> then_(
+              (_) =>
+                page
+                |> Page.evaluateWithArg([@bs] _execBodyFunc, bodyFuncStr)
+                |> then_(
+                     (timeData: bodyFuncReturnValue) => resolve((page, resultData, data, timeData))
+                   )
+            )
      )
   |> then_(
        ((page, resultData, lastData, timeData)) =>

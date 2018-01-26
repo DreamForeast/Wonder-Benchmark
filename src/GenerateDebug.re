@@ -30,7 +30,8 @@ let generateHtmlFiles =
              ScriptFileUtils.getAllScriptFilePathList(commonData),
              bodyFuncStr,
              _getType()
-           )
+           ),
+           performanceTestData
          );
          /* GenerateBaseDebugUtils.isGenerateBaseDebugData(performanceTestData) ?
             GenerateBaseDebugUtils.generateBaseDebugFile(
