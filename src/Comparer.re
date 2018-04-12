@@ -137,7 +137,14 @@ let _getPassedTimeList = (passedTimeListMap, testName, caseName) : option(list(b
     }
   };
 
-let _compare = (passedTimeListMap, actualTestName, actualResultCaseList, benchmarkResultCaseList) =>
+let _compare =
+    (
+      passedTimeListMap,
+      actualTestName,
+      actualResultCaseList,
+      benchmarkResultCaseList,
+      compareResultList
+    ) =>
   List.fold_left2(
     (
       failList,
@@ -214,7 +221,7 @@ let _compare = (passedTimeListMap, actualTestName, actualResultCaseList, benchma
             | _ => failList
             }
           ),
-    [],
+    compareResultList,
     actualResultCaseList,
     benchmarkResultCaseList
     |> List.filter(
@@ -260,12 +267,13 @@ let compare =
                         )
                       )
                     | (_, benchmarkResultCaseList) =>
-                      _compare(
-                        passedTimeListMap,
-                        actualTestName,
-                        actualResultCaseList,
-                        benchmarkResultCaseList
-                      )
+                      compareResultList
+                      |> _compare(
+                           passedTimeListMap,
+                           actualTestName,
+                           actualResultCaseList,
+                           benchmarkResultCaseList
+                         )
                     },
                   []
                 )

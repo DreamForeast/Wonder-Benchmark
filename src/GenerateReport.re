@@ -57,7 +57,7 @@ let removeFile = (reportFilePath) =>
 let generateHtmlFile =
     (
       targetAbsoluteFilePath: string,
-      ({commonData, testDataList} as performanceTestData, compareResultList)
+      ({commonData} as performanceTestData, compareResultList)
     ) => {
   let htmlStr =
     _buildHeadStr()

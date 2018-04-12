@@ -14,12 +14,12 @@ let _ =
       beforeEach(() => sandbox := createSandbox());
       afterEach(() => restoreSandbox(refJsObjToSandbox(sandbox^)));
       afterAll(
-           () =>
-             GenerateBenchmark.removeFiles(
-               Node.Path.join([|Node.Process.cwd(), "./test/performance/benchmark"|])
-             )
-         );
-         beforeAllPromise(() => Tester.generateBenchmark(correctPerformanceTestData));
+        () =>
+          GenerateBenchmark.removeFiles(
+            Node.Path.join([|Node.Process.cwd(), "./test/performance/benchmark"|])
+          )
+      );
+      beforeAllPromise(() => Tester.generateBenchmark(correctPerformanceTestData));
       describe(
         "Comparer",
         () =>
@@ -54,7 +54,7 @@ let _ =
               );
               describe(
                 "fix bug",
-                () =>
+                () => {
                   testPromise(
                     "if current run faster than benchmark, diff should be -xxx%",
                     () =>
@@ -76,7 +76,42 @@ let _ =
                                   }
                                 )
                          )
+                  );
+                  describe(
+                    "the failList should include all fail cases",
+                    () => {
+                      afterAllPromise(() => Tester.generateBenchmark(correctPerformanceTestData));
+                      testPromise(
+                        "test PerformanceTestData->testDataList has two cases",
+                        () =>
+                          Tester.generateBenchmark(correctPerformanceTestData2)
+                          |> then_(
+                               (_) =>
+                                 WonderBsPuppeteer.PuppeteerUtils.launchHeadlessBrowser()
+                                 |> then_(
+                                      (browser) =>
+                                        Tester.compare(browser, wrongPerformanceTestData4)
+                                        |> then_(
+                                             (failList) => {
+                                               let failText = Comparer.getFailText(failList);
+                                               /* WonderLog.Log.log(failText) |> ignore; */
+                                               (
+                                                 Comparer.isPass(failList),
+                                                 failText |> Js.String.includes("pf_test11"),
+                                                 failText |> Js.String.includes("pf_test12"),
+                                                 failText |> Js.String.includes("pf_test21"),
+                                                 failText |> Js.String.includes("pf_test22")
+                                               )
+                                               |> expect == (false, true, true, true, true)
+                                               |> resolve
+                                             }
+                                           )
+                                    )
+                             )
+                      )
+                    }
                   )
+                }
               )
             }
           )
@@ -225,7 +260,8 @@ let _ =
                               passedTimeListMap,
                               "test1",
                               actualResultCaseList,
-                              benchmarkResultCaseList
+                              benchmarkResultCaseList,
+                              []
                             );
                           let (
                             failMessage,
@@ -254,7 +290,8 @@ let _ =
                               passedTimeListMap,
                               "test1",
                               actualResultCaseList,
-                              benchmarkResultCaseList
+                              benchmarkResultCaseList,
+                              []
                             );
                           let (
                             failMessage,
