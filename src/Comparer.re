@@ -128,10 +128,10 @@ let getFailCaseText = (failList) =>
   |> List.map(((failMessage, (testName, {name}: case, _, _, _))) => (testName, name, failMessage));
 
 let _getPassedTimeList = (passedTimeListMap, testName, caseName) : option(list(bool)) =>
-  switch (passedTimeListMap |> WonderCommonlib.HashMapSystem.get(testName)) {
+  switch (passedTimeListMap |> WonderCommonlib.HashMapService.get(testName)) {
   | None => None
   | Some(map) =>
-    switch (map |> WonderCommonlib.HashMapSystem.get(caseName)) {
+    switch (map |> WonderCommonlib.HashMapService.get(caseName)) {
     | None => None
     | Some(timeList) => Some(timeList)
     }

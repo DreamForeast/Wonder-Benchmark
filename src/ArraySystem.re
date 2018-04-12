@@ -1,4 +1,4 @@
-open WonderCommonlib.ArraySystem;
+open WonderCommonlib.ArrayService;
 
 let zip = (arr) => {
   let itemArr = range(0, (arr[0] |> Js.Array.length) - 1) |> Js.Array.map((_) => [||]);

@@ -45,7 +45,7 @@ let compare = (browser, {commonData, testDataList} as performanceTestData) =>
   Comparer.compare(
     browser,
     ScriptFileUtils.getAllScriptFilePathList(commonData),
-    WonderCommonlib.HashMapSystem.createEmpty(),
+    WonderCommonlib.HashMapService.createEmpty(),
     performanceTestData
   );
 
@@ -111,19 +111,19 @@ let _getUnion = (sourcePassedTimeList, targetPassedTimeList) =>
   );
 
 let _updatePassdTimeListMap = (testName, caseName, targetPassedTimeList, map) =>
-  switch (map |> WonderCommonlib.HashMapSystem.get(testName)) {
+  switch (map |> WonderCommonlib.HashMapService.get(testName)) {
   | None =>
     map
-    |> WonderCommonlib.HashMapSystem.set(
+    |> WonderCommonlib.HashMapService.set(
          testName,
-         WonderCommonlib.HashMapSystem.createEmpty()
-         |> WonderCommonlib.HashMapSystem.set(caseName, targetPassedTimeList)
+         WonderCommonlib.HashMapService.createEmpty()
+         |> WonderCommonlib.HashMapService.set(caseName, targetPassedTimeList)
        )
   | Some(mapWithCaseName) =>
     mapWithCaseName
-    |> WonderCommonlib.HashMapSystem.set(
+    |> WonderCommonlib.HashMapService.set(
          caseName,
-         switch (mapWithCaseName |> WonderCommonlib.HashMapSystem.get(caseName)) {
+         switch (mapWithCaseName |> WonderCommonlib.HashMapService.get(caseName)) {
          | None => targetPassedTimeList
          | Some(sourcePassedTimeList) => _getUnion(sourcePassedTimeList, targetPassedTimeList)
          }
@@ -260,7 +260,7 @@ let _compareSpecificCount =
     compareCount,
     allTargetScriptFilePathList,
     allBaseScriptFilePathList,
-    WonderCommonlib.HashMapSystem.createEmpty(),
+    WonderCommonlib.HashMapService.createEmpty(),
     performanceTestData,
     [],
     []

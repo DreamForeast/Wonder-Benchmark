@@ -169,7 +169,7 @@ let _execFunc =
 
 let _execSpecificCount =
     (isClosePage, execCount, allScriptFilePathList, name, bodyFuncStr, errorRate, browser) =>
-  WonderCommonlib.ArraySystem.range(0, execCount - 1)
+  WonderCommonlib.ArrayService.range(0, execCount - 1)
   |> Js.Array.reduce(
        (promise, _) =>
          promise
