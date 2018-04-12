@@ -46,6 +46,43 @@ let _ =
              )
         }
       );
+      describe(
+        "generateAllCasesReport",
+        () =>
+          testPromise(
+            "test generate report html file with base and target debug file links and generate base and target debug files",
+            () => {
+              let reportFilePath = Path.join([|Process.cwd(), "./test/report/report.html"|]);
+              WonderBsPuppeteer.PuppeteerUtils.launchHeadlessBrowser()
+              |> then_(
+                   (browser) => {
+                     Tester.generateAllCasesReport(reportFilePath, wrongPerformanceTestData2);
+                     (
+                       Fs.existsSync(reportFilePath),
+                       Fs.readFileAsUtf8Sync(reportFilePath)
+                       |> Js.String.includes("base_debug.html"),
+                       Fs.readFileAsUtf8Sync(reportFilePath)
+                       |> Js.String.includes("target_debug.html"),
+                       Fs.existsSync(
+                         Path.join([|
+                           Process.cwd(),
+                           "./test/report/basic1_pf_test2_base_debug.html"
+                         |])
+                       ),
+                       Fs.existsSync(
+                         Path.join([|
+                           Process.cwd(),
+                           "./test/report/basic1_pf_test2_target_debug.html"
+                         |])
+                       )
+                     )
+                     |> expect == (true, true, true, true, true)
+                     |> resolve
+                   }
+                 )
+            }
+          )
+      );
       testPromise(
         "test generate report html file with base and target debug file links and generate base and target debug files",
         () => {

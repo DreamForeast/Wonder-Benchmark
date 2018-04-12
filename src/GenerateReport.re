@@ -11,10 +11,9 @@ let _buildFootStr = () => {|</body>
 
 let _buildFailCaseListHtmlStr = (targetAbsoluteFilePath, compareResultList, performanceTestData) =>
   compareResultList
-  |> Comparer.getFailCaseText
+  |> Comparer.getFailCaseTextList
   |> List.fold_left(
        (resultStr, (testName, caseName, text)) => {
-         /* GenerateBaseDebugUtils.isGenerateBaseDebugData(performanceTestData) ? */
          let targetDebugFilePath =
            "./" ++ GenerateDebug.buildDebugHtmlFileName(testName, caseName);
          let baseDebugFilePath =
@@ -30,18 +29,6 @@ let _buildFailCaseListHtmlStr = (targetAbsoluteFilePath, compareResultList, perf
                 </section>
                     |j}
        },
-       /* {
-            let targetDebugFilePath =
-              "./" ++ GenerateDebug.buildDebugHtmlFileName(testName, caseName);
-            let title = PerformanceTestDataUtils.buildCaseTitle(testName, caseName);
-            let htmlText = text |> Js.String.replaceByRe([%re {|/\n/g|}], "<br/>");
-            resultStr
-            ++ {j|<section>
-                   <a href="$targetDebugFilePath" target="_blank"><h3>$title</h3></a>
-                   <p>$htmlText</p>
-               </section>
-                   |j}
-          }, */
        ""
      );
 
@@ -55,10 +42,7 @@ let removeFile = (reportFilePath) =>
     WonderCommonlib.NodeExtend.rmdirFilesSync(reportFilePath |> Path.dirname) : ();
 
 let generateHtmlFile =
-    (
-      targetAbsoluteFilePath: string,
-      ({commonData} as performanceTestData, compareResultList)
-    ) => {
+    (targetAbsoluteFilePath: string, ({commonData} as performanceTestData, compareResultList)) => {
   let htmlStr =
     _buildHeadStr()
     ++ "\n<body>\n"

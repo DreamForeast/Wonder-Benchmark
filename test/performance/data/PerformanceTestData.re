@@ -133,7 +133,6 @@ return {"textArray": ["prepare", "init", "loopBody"], "timeArray": [n1, n2, n3, 
   ]
 };
 
-
 let correctPerformanceTestData2 = {
   commonData: commonData1,
   testDataList: [
@@ -317,9 +316,6 @@ return {"textArray": ["prepare", "init", "loopBody"], "timeArray": [n1, n2, n3, 
     }
   ]
 };
-
-
-
 
 let wrongPerformanceTestData = {
   commonData: commonData1,

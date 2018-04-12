@@ -123,7 +123,19 @@ let getFailText = (failList) =>
        ""
      );
 
-let getFailCaseText = (failList) =>
+let buildFailList = ({commonData, testDataList} as performanceTestData) =>
+  testDataList
+  |> List.fold_left(
+       (resultList, {name: testName, caseList}: testData) =>
+         caseList
+         |> List.fold_left(
+              (resultList, case) => [("", (testName, case, [], [], Obj.magic(1))), ...resultList],
+              resultList
+            ),
+       []
+     );
+
+let getFailCaseTextList = (failList) =>
   failList
   |> List.map(((failMessage, (testName, {name}: case, _, _, _))) => (testName, name, failMessage));
 

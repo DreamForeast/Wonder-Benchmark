@@ -40,6 +40,22 @@ let generateReport = (reportFilePath, failList, performanceTestData) =>
     }
   );
 
+let generateAllCasesReport = (reportFilePath, performanceTestData) =>
+  make(
+    (~resolve, ~reject) => {
+      let failList = Comparer.buildFailList(performanceTestData);
+      GenerateReport.generateHtmlFile(reportFilePath, (performanceTestData, failList));
+      [@bs]
+      resolve(
+        GenerateDebug.generateHtmlFiles(
+          Node.Path.dirname(reportFilePath),
+          performanceTestData,
+          failList
+        )
+      )
+    }
+  );
+
 let compare = (browser, {commonData, testDataList} as performanceTestData) =>
   [@bs]
   Comparer.compare(
