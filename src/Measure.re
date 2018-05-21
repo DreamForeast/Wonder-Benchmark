@@ -104,6 +104,28 @@ let _exposeReadFileAsUtf8Sync = (page) =>
        (filePath) => Fs.readFileAsUtf8Sync(filePath)
      );
 
+let _loadImage = [%bs.raw
+  {|
+      function(imageSrc){
+        var getPixels = require("get-pixels");
+
+        return new Promise((resolve, reject) => {
+
+        getPixels(imageSrc, function(err, pixels) {
+            if(err) {
+                reject(err);
+            }
+
+            resolve([Array.from(pixels.data.slice()), pixels.shape])
+          })
+        });
+      }
+      |}
+];
+
+let _exposeLoadImage = (page) =>
+  page |> Page.exposeFunctionWithString("loadImage", (imageSrc) => _loadImage(imageSrc));
+
 let _execFunc =
     (isClosePage, allScriptFilePathList, name, bodyFuncStr, errorRate, browser, promise) =>
   promise
@@ -124,6 +146,7 @@ let _execFunc =
        ((page, resultData, data)) =>
          page
          |> _exposeReadFileAsUtf8Sync
+         |> then_((_) => page |> _exposeLoadImage)
          |> then_(
               (_) =>
                 page
