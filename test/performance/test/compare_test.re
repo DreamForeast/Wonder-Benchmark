@@ -397,6 +397,7 @@ let _ =
                     }
                   )
               );
+
               describe(
                 "test re-generate fail cases' benchmark",
                 () => {
@@ -531,6 +532,7 @@ let _ =
                   )
                 }
               );
+              
               describe(
                 "if compare diff percent exceed max allow diff percent, not re-compare it and regard it as fail case",
                 () => {

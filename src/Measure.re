@@ -78,8 +78,8 @@ let _addScript = (allScriptFilePathList, promise) =>
               ((page, resultData)) =>
                 page
                 |> WonderBsPuppeteer.Page.addScriptTag({
-                     "url": Js.Nullable.empty,
-                     "content": Js.Nullable.empty,
+                     "url": Js.Nullable.undefined,
+                     "content": Js.Nullable.undefined,
                      "path": Js.Nullable.return(scriptFilePath)
                    })
                 |> then_((_) => (page, resultData) |> resolve)
