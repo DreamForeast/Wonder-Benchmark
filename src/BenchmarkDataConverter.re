@@ -1,5 +1,7 @@
 open Node;
 
+open WonderBsJson;
+
 let _buildTimeCaseStr = (timeTextList, timeList) =>
   Json.Encode.(
     List.fold_left2(
