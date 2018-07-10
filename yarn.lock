@@ -710,9 +710,9 @@ browser-resolve@^1.11.2:
   dependencies:
     resolve "1.1.7"
 
-bs-platform@3.1.4:
-  version "3.1.4"
-  resolved "https://registry.yarnpkg.com/bs-platform/-/bs-platform-3.1.4.tgz#fe8495443b35aff73dfb61cba1e6d7b88311910b"
+bs-platform@4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/bs-platform/-/bs-platform-4.0.0.tgz#4190460550414eecff92f1e2bbaf4d9c557b60af"
 
 bser@^2.0.0:
   version "2.0.0"
@@ -3486,9 +3486,9 @@ wonder-jest@latest:
   dependencies:
     wonder-jest-cli latest
 
-wonder-log@^0.1.1:
-  version "0.1.2"
-  resolved "https://registry.yarnpkg.com/wonder-log/-/wonder-log-0.1.2.tgz#e7a2c0d6553952c1b40374b0d9afdb0a727043ec"
+wonder-log@^0.2.2:
+  version "0.2.2"
+  resolved "https://registry.yarnpkg.com/wonder-log/-/wonder-log-0.2.2.tgz#3f890fc67f77bd7675d0707c041a90b19bbd6705"
 
 wordwrap@0.0.2:
   version "0.0.2"
