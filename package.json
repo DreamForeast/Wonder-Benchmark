@@ -1,6 +1,6 @@
 {
   "name": "wonder-benchmark",
-  "version": "0.2.11",
+  "version": "0.2.12",
   "authors": "Wonder",
   "description": "wonder benchmark library",
   "homepage": "https://github.com/Wonder-Technology/Wonder-Benchmark",
@@ -26,7 +26,7 @@
     "mime": "^2.3.1",
     "wonder-bs-json": "^0.0.1",
     "wonder-bs-puppeteer": "^0.1.6",
-    "wonder-commonlib": "^0.2.23",
+    "wonder-commonlib": "^0.2.26",
     "wonder-log": "^0.2.2"
   },
   "resolutions": {
