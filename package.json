@@ -1,6 +1,6 @@
 {
   "name": "wonder-benchmark",
-  "version": "0.2.12",
+  "version": "0.2.13",
   "authors": "Wonder",
   "description": "wonder benchmark library",
   "homepage": "https://github.com/Wonder-Technology/Wonder-Benchmark",
@@ -13,23 +13,23 @@
     "test": "jest --runInBand --config jest.json"
   },
   "devDependencies": {
-    "babel": "^6.23.0",
-    "babel-cli": "^6.26.0",
-    "babel-preset-es2015": "^6.24.1",
-    "bs-platform": "4.0.0",
+    "@babel/core": "^7.3.4",
+    "@babel/preset-env": "^7.3.4",
+    "babel-jest": "^24.1.0",
+    "bs-platform": "4.0.18",
     "puppeteer": "^1.4.0",
     "wonder-bs-jest": "latest",
-    "wonder-bs-sinon": "^0.1.7"
+    "wonder-bs-sinon": "latest"
   },
   "dependencies": {
     "get-pixels": "^3.3.0",
     "mime": "^2.3.1",
     "wonder-bs-json": "^0.0.1",
     "wonder-bs-puppeteer": "^0.1.6",
-    "wonder-commonlib": "^0.2.26",
+    "wonder-commonlib": "latest",
     "wonder-log": "^0.2.2"
   },
   "resolutions": {
-    "wonder-bs-jest": "0.2.17"
+    "wonder-bs-jest": "0.2.23"
   }
 }

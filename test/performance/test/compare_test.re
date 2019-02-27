@@ -207,16 +207,16 @@ let _ =
                              1
                            );
                       let passedTimeListMap =
-                        WonderCommonlib.HashMapService.createEmpty()
+                        WonderCommonlib.MutableHashMapService.createEmpty()
                         |> Tester._updatePassdTimeListMapFromFailList(failList1)
                         |> Tester._updatePassdTimeListMapFromFailList(failList2);
                       (
                         passedTimeListMap
-                        |> WonderCommonlib.HashMapService.unsafeGet("test1")
-                        |> WonderCommonlib.HashMapService.unsafeGet("case1"),
+                        |> WonderCommonlib.MutableHashMapService.unsafeGet("test1")
+                        |> WonderCommonlib.MutableHashMapService.unsafeGet("case1"),
                         passedTimeListMap
-                        |> WonderCommonlib.HashMapService.unsafeGet("test1")
-                        |> WonderCommonlib.HashMapService.unsafeGet("case2")
+                        |> WonderCommonlib.MutableHashMapService.unsafeGet("test1")
+                        |> WonderCommonlib.MutableHashMapService.unsafeGet("case2")
                       )
                       |> expect == ([true, false], [true, true])
                     }
@@ -249,11 +249,11 @@ let _ =
                           let benchmarkResultCaseList =
                             [] |> _buildBenchmarkCaseList("c1", 1, 2, ["t1", "t2"], [15, 20], 10);
                           let passedTimeListMap =
-                            WonderCommonlib.HashMapService.createEmpty()
-                            |> WonderCommonlib.HashMapService.set(
+                            WonderCommonlib.MutableHashMapService.createEmpty()
+                            |> WonderCommonlib.MutableHashMapService.set(
                                  "test1",
-                                 WonderCommonlib.HashMapService.createEmpty()
-                                 |> WonderCommonlib.HashMapService.set("c1", [true, false])
+                                 WonderCommonlib.MutableHashMapService.createEmpty()
+                                 |> WonderCommonlib.MutableHashMapService.set("c1", [true, false])
                                );
                           let failList =
                             Comparer._compare(
@@ -284,7 +284,7 @@ let _ =
                             [] |> _buildActuablCaseList("c1", 1, 1, ["t1", "t2"], [10, 20], 10);
                           let benchmarkResultCaseList =
                             [] |> _buildBenchmarkCaseList("c1", 1, 2, ["t1", "t2"], [15, 20], 10);
-                          let passedTimeListMap = WonderCommonlib.HashMapService.createEmpty();
+                          let passedTimeListMap = WonderCommonlib.MutableHashMapService.createEmpty();
                           let failList =
                             Comparer._compare(
                               passedTimeListMap,
